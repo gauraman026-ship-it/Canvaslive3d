@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CANVAS LIVE 3D</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        body { background-color: #000; color: #fff; font-family: 'Arial', sans-serif; text-align: center; margin: 0; padding: 0; }
+        .header { font-size: 30px; font-weight: bold; padding: 20px; text-transform: uppercase; }
+        .red-text { color: #ff3131; }
+        .timer-box { margin: 10px 0; }
+        .timer-clock { font-size: 50px; color: #ff4444; font-weight: bold; }
+        .btn-container { display: flex; justify-content: center; gap: 10px; padding: 15px; }
+        .btn { flex: 1; padding: 18px; border-radius: 10px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-today { background: #ffde00; color: #000; }
+        .btn-yesterday { background: #222; color: #555; }
+        table { width: 100%; border-collapse: collapse; }
+        th { padding: 12px; font-size: 12px; }
+        td { border-bottom: 1px solid #1a1a1a; padding: 15px; font-size: 20px; font-weight: bold; }
+        .col-time { background: #5d4d00; width: 25%; font-size: 14px; }
+        .col-a { background: #00a2e8; width: 25%; }
+        .col-b { background: #22b14c; width: 25%; }
+        .col-c { background: #a349a4; width: 25%; }
+        small { font-size: 10px; opacity: 0.5; margin-right: 3px; }
+        #admin-panel { display: none; background: #1a1a1a; padding: 20px; border-top: 2px solid #ffde00; position: fixed; bottom: 0; width: 100%; z-index: 9999; box-sizing: border-box; }
+        input { width: 80%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">CANVAS <span class="red-text">3D LIVE</span></div>
+    
+    <div class="timer-box">
+        <div style="font-size: 12px; color: #bbb;">NEXT DRAW: <span id="draw-time">--:--</span></div>
+        <div id="timer" class="timer-clock">00:00:00</div>
+    </div>
+
+    <div class="btn-container">
+        <button id="today-btn" class="btn btn-today" onclick="loadResults('today')">TODAY</button>
+        <button id="yesterday-btn" class="btn btn-yesterday" onclick="loadResults('yesterday')">YESTERDAY</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="col-time">PLAY TIME</th>
+                <th class="col-a">A</th>
+                <th class="col-b) ">B</th>
+                <th class="col-c">C</th>
+            </tr>
+        </thead>
+        <tbody id="result-list"></tbody>
+    </table>
+
+    <button onclick="openAdmin()" style="position:fixed; bottom:5px; right:5px; opacity:0.2; background:none; border:none; color:#fff; font-size:10px;">Admin</button>
+
+    <div id="admin-panel">
+        <h3 style="margin:0 0 10px 0;">Admin Panel</h3>
+        <input type="text" id="fix-time" placeholder="Time (e.g. 11:15 AM)">
+        <div style="display:flex; gap:5px; justify-content:center; margin-bottom:10px;">
+            <input type="number" id="fix-a" placeholder="A" style="width:20%;">
+            <input type="number" id="fix-b" placeholder="B" style="width:20%;">
+            <input type="number" id="fix-c" placeholder="C" style="width:20%;">
+        </div>
+        <button onclick="saveFix()" style="width:85%; padding:12px; background:#22b14c; color:#fff; border:none; font-weight:bold; border-radius:5px; margin-bottom:10px;">SAVE RESULT</button>
+        <button onclick="document.getElementById('admin-panel').style.display='none'" style="width:85%; padding:10px; background:#ff3131; color:#fff; border:none; font-weight:bold; border-radius:5px;">CLOSE (HATAO)</button>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuY1kjzvbXT37mUccPQZgC_BbTK2RpEgM",
+            authDomain: "canvas3dlivegame.firebaseapp.com",
+            databaseURL: "https://canvas3dlivegame-default-rtdb.firebaseio.com",
+            projectId: "canvas3dlivegame",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function fillMissedResults() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMin = now.getMinutes();
+            db.ref('results/today').once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                for (let h = 9; h <= currentHour; h++) {
+                    for (let m = 0; m < 60; m += 15) {
+                        if (h === currentHour && m > currentMin) break;
+                        if (h === 22 && m > 0) break;
+                        let t = `${h % 12 || 12}:${m === 0 ? '00' : m} ${h >= 12 ? 'PM' : 'AM'}`;
+                        if (!data[t]) {
+                            db.ref('results/today/' + t).set({
+                                A: Math.floor(100 + Math.random() * 900),
+                                B: Math.floor(100 + Math.random() * 900),
+                                C: Math.floor(100 + Math.random() * 900)
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTimer() {
+            const now = new Date();
+            let mins = now.getMinutes();
+            let nextMins = Math.ceil((mins + 1) / 15) * 15;
+            let nextHrs = now.getHours();
+            if (nextMins >= 60) { nextMins = 0; nextHrs++; }
+            const nextDraw = new Date(now);
+            nextDraw.setHours(nextHrs, nextMins, 0);
+            const diff = nextDraw - now;
+            const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+            const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+            const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+            document.getElementById('draw-time').innerText = nextDraw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            if ((mins + 4) % 15 === 0 && s === "00") {
+                const drawStr = nextDraw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                db.ref('fixed_results/' + drawStr).once('value', s => {
+                    let a, b, c;
+                    if(s.exists()){ a=s.val().A; b=s.val().B; c=s.val().C; db.ref('fixed_results/'+drawStr).remove(); }
+                    else { a=Math.floor(100+Math.random()*900); b=Math.floor(100+Math.random()*900); c=Math.floor(100+Math.random()*900); }
+                    db.ref('results/today/' + drawStr).set({A:a, B:b, C:c});
+                });
+            }
+        }
+        setInterval(updateTimer, 1000);
+
+        function loadResults(type) {
+            db.ref('results/' + type).on('value', (snapshot) => {
+                const list = document.getElementById('result-list');
+                list.innerHTML = "";
+                const data = snapshot.val() || {};
+                for (let h = 9; h <= 22; h++) {
+                    for (let m = 0; m < 60; m += 15) {
+                        if (h === 22 && m > 0) break;
+                        let t = `${h % 12 || 12}:${m === 0 ? '00' : m} ${h >= 12 ? 'PM' : 'AM'}`;
+                        let res = data[t] || {A: '', B: '', C: ''};
+                        list.innerHTML += `<tr><td class="col-time">${t}</td><td><small>A</small>${res.A}</td><td><small>B</small>${res.B}</td><td><small>C</small>${res.C}</td></tr>`;
+                    }
+                }
+            });
+        }
+
+        // --- PASSWORD UPDATE ---
+        function openAdmin() { 
+            let pin = prompt("Enter Admin PIN:");
+            if(pin === "5566") { // Naya PIN yahan hai
+                document.getElementById('admin-panel').style.display='block'; 
+            } else if(pin !== null) {
+                alert("Wrong PIN!");
+            }
+        }
+
+        function saveFix() {
+            const t = document.getElementById('fix-time').value;
+            const a = document.getElementById('fix-a').value;
+            const b = document.getElementById('fix-b').value;
+            const c = document.getElementById('fix-c').value;
+            if(!t) { alert("Please enter time!"); return; }
+            db.ref('results/today/' + t).set({A:a, B:b, C:c});
+            alert("Result Saved for " + t);
+        }
+
+        fillMissedResults();
+        loadResults('today');
+    </script>
+</body>
+</html>

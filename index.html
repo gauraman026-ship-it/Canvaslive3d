@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CANVAS LIVE 3D</title>
+    <title>CANVAS 3D LIVE</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
@@ -41,25 +41,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .live-badge {
             background: rgba(255, 51, 75, 0.15);
             color: var(--accent-red);
             font-size: 11px;
-            padding: 4px 8px;
+            padding: 4px 10px;
             border-radius: 20px;
             font-weight: 700;
             border: 1px solid rgba(255, 51, 75, 0.3);
             letter-spacing: 1px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
         }
 
         .red-text { color: var(--accent-red); }
@@ -84,7 +77,7 @@
 
         .timer-clock { 
             font-family: 'Roboto Mono', monospace;
-            font-size: 38px; 
+            font-size: 34px; 
             color: var(--accent-red); 
             font-weight: 700; 
             letter-spacing: 2px;
@@ -403,7 +396,6 @@
                         if (h === 22 && m > 0) break;
                         let t = `${h % 12 || 12}:${m === 0 ? '00' : m} ${h >= 12 ? 'PM' : 'AM'}`;
                         if (!data[t]) {
-                            // Pehle check karenge ki koi fixed result queue mein hai ya nahi
                             db.ref('fixed_results/' + t).once('value', fSnap => {
                                 if(fSnap.exists()) {
                                     db.ref('results/today/' + t).set(fSnap.val());
@@ -436,17 +428,20 @@
 
             if (hrs < 9 || hrs > 22) {
                 timerElement.innerText = "CLOSED";
-                timerElement.style.fontSize = "32px";
+                timerElement.style.fontSize = "34px";
                 timerLabelText.innerText = "STATUS";
                 drawInfoBox.style.display = "none";
                 badgeStatus.innerText = "CLOSED";
                 badgeStatus.style.color = "#ff334b";
+                badgeStatus.style.background = "rgba(255, 51, 75, 0.15)";
+                badgeStatus.style.borderColor = "rgba(255, 51, 75, 0.3)";
                 return;
             } else {
-                timerElement.style.fontSize = "38px";
+                timerElement.style.fontSize = "34px";
                 timerLabelText.innerText = "NEXT DRAW COUNTDOWN";
                 drawInfoBox.style.display = "block";
                 badgeStatus.innerText = "LIVE";
+                badgeStatus.style.color = "#ff334b";
             }
 
             let nextDraw = new Date(now);
@@ -469,7 +464,6 @@
             timerElement.innerText = `${h}:${m}:${sec}`;
             drawTimeElement.innerText = nextDraw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            // ** जब समय पूरा होगा, तब यह चेक करेगा कि इस समय का कोई फिक्स रिजल्ट सेव है या नहीं। अगर है तो वह लाइव हो जाएगा, वरना रैंडम आ जाएगा। **
             if ((mins + 4) % 15 === 0 && s === "00") {
                 const drawStr = nextDraw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
@@ -479,7 +473,7 @@
                         a = snapshot.val().A; 
                         b = snapshot.val().B; 
                         c = snapshot.val().C; 
-                        db.ref('fixed_results/' + drawStr).remove(); // इस्तेमाल होने के बाद हटा देंगे
+                        db.ref('fixed_results/' + drawStr).remove(); 
                     } else { 
                         a = generateValidRandom(); 
                         b = generateValidRandom(); 
@@ -547,7 +541,6 @@
             }
         }
 
-        // ** यह फिक्स रिजल्ट को सीधे 'fixed_results' फोल्डर में सेव कर देगा, और सही समय आने पर अपने आप स्क्रीन पर आ जाएगा **
         function saveFix() {
             const t = document.getElementById('fix-time').value;
             const a = document.getElementById('fix-a').value;

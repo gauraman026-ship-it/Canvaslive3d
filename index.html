@@ -6,66 +6,287 @@
     <title>CANVAS LIVE 3D</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #000; color: #fff; font-family: 'Arial', sans-serif; text-align: center; margin: 0; padding: 0; }
-        .header { font-size: 30px; font-weight: bold; padding: 20px; text-transform: uppercase; }
-        .red-text { color: #ff3131; }
-        .timer-box { margin: 10px 0; }
-        .timer-clock { font-size: 50px; color: #ff4444; font-weight: bold; }
-        .btn-container { display: flex; justify-content: center; gap: 10px; padding: 15px; }
-        .btn { flex: 1; padding: 18px; border-radius: 10px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn-today { background: #ffde00; color: #000; }
-        .btn-yesterday { background: #222; color: #555; }
-        table { width: 100%; border-collapse: collapse; }
-        th { padding: 12px; font-size: 12px; }
-        td { border-bottom: 1px solid #1a1a1a; padding: 15px; font-size: 20px; font-weight: bold; }
-        .col-time { background: #5d4d00; width: 25%; font-size: 14px; }
-        .col-a { background: #00a2e8; width: 25%; }
-        .col-b { background: #22b14c; width: 25%; }
-        .col-c { background: #a349a4; width: 25%; }
-        small { font-size: 10px; opacity: 0.5; margin-right: 3px; }
-        #admin-panel { display: none; background: #1a1a1a; padding: 20px; border-top: 2px solid #ffde00; position: fixed; bottom: 0; width: 100%; z-index: 9999; box-sizing: border-box; }
-        input { width: 80%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: none; }
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #131b2e;
+            --accent-red: #ff334b;
+            --accent-gold: #ffc107;
+            --text-main: #ffffff;
+            --text-muted: #8c9bae;
+            --border-color: #1e293b;
+        }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            font-family: 'Montserrat', sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            padding: 0; 
+        }
+
+        .header-container {
+            background: linear-gradient(180deg, #111827 0%, var(--bg-color) 100%);
+            padding: 22px 15px 15px 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .header { 
+            font-size: 26px; 
+            font-weight: 800; 
+            letter-spacing: 1.5px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .live-badge {
+            background: rgba(255, 51, 75, 0.15);
+            color: var(--accent-red);
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            border: 1px solid rgba(255, 51, 75, 0.3);
+            letter-spacing: 1px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .red-text { color: var(--accent-red); }
+
+        .timer-container {
+            background: var(--card-bg);
+            margin: 15px auto;
+            max-width: 90%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .timer-label { 
+            font-size: 11px; 
+            color: var(--text-muted); 
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .timer-clock { 
+            font-family: 'Roboto Mono', monospace;
+            font-size: 38px; 
+            color: var(--accent-red); 
+            font-weight: 700; 
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(255, 51, 75, 0.2);
+        }
+
+        .draw-info {
+            font-size: 12px;
+            color: var(--text-main);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .btn-container { 
+            display: flex; 
+            justify-content: center; 
+            gap: 12px; 
+            padding: 10px 15px 20px 15px; 
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        .btn { 
+            flex: 1; 
+            padding: 14px; 
+            border-radius: 8px; 
+            border: none; 
+            font-size: 14px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-today { 
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); 
+            color: #000; 
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-yesterday { 
+            background: #1e293b; 
+            color: var(--text-muted); 
+            border: 1px solid #334155;
+        }
+
+        .table-wrapper {
+            max-width: 100%;
+            overflow-x: auto;
+            padding: 0 10px 30px 10px;
+        }
+
+        table { 
+            width: 100%; 
+            max-width: 600px;
+            margin: 0 auto;
+            border-collapse: separate; 
+            border-spacing: 0 6px;
+        }
+
+        th { 
+            padding: 12px; 
+            font-size: 11px; 
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        td { 
+            background: var(--card-bg);
+            padding: 14px 10px; 
+            font-size: 18px; 
+            font-weight: 700; 
+            font-family: 'Roboto Mono', monospace;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td:first-child {
+            border-left: 1px solid var(--border-color);
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+
+        td:last-child {
+            border-right: 1px solid var(--border-color);
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .col-time { 
+            background: #1a233a; 
+            width: 28%; 
+            font-size: 13px; 
+            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+
+        .col-a { color: #38bdf8; width: 24%; }
+        .col-b { color: #4ade80; width: 24%; }
+        .col-c { color: #c084fc; width: 24%; }
+
+        small { 
+            font-size: 9px; 
+            opacity: 0.6; 
+            margin-right: 4px; 
+            font-family: 'Montserrat', sans-serif;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        #admin-panel { 
+            display: none; 
+            background: #0f172a; 
+            padding: 20px; 
+            border-top: 2px solid var(--accent-gold); 
+            position: fixed; 
+            bottom: 0; 
+            left: 0;
+            width: 100%; 
+            z-index: 9999; 
+            box-sizing: border-box; 
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.8);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        input, select { 
+            width: 85%; 
+            max-width: 400px;
+            padding: 11px; 
+            margin-bottom: 10px; 
+            border-radius: 6px; 
+            border: 1px solid var(--border-color); 
+            background: var(--bg-color);
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">CANVAS <span class="red-text">3D LIVE</span></div>
+    <div class="header-container" onclick="handleHeaderTap()">
+        <div class="header">
+            CANVAS <span class="red-text">3D LIVE</span>
+            <span class="live-badge" id="badge-status">LIVE</span>
+        </div>
+    </div>
     
-    <div class="timer-box">
-        <div style="font-size: 12px; color: #bbb;">NEXT DRAW: <span id="draw-time">--:--</span></div>
+    <div class="timer-container">
+        <div class="timer-label" id="timer-label-text">NEXT DRAW COUNTDOWN</div>
         <div id="timer" class="timer-clock">00:00:00</div>
+        <div class="draw-info" id="draw-info-box">Target Time: <span id="draw-time" style="color: var(--accent-gold);">--:--</span></div>
     </div>
 
     <div class="btn-container">
-        <button id="today-btn" class="btn btn-today" onclick="loadResults('today')">TODAY</button>
+        <button id="today-btn" class="btn btn-today" onclick="loadResults('today')">TODAY RESULTS</button>
         <button id="yesterday-btn" class="btn btn-yesterday" onclick="loadResults('yesterday')">YESTERDAY</button>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th class="col-time">PLAY TIME</th>
-                <th class="col-a">A</th>
-                <th class="col-b) ">B</th>
-                <th class="col-c">C</th>
-            </tr>
-        </thead>
-        <tbody id="result-list"></tbody>
-    </table>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-time">TIME SLOT</th>
+                    <th class="col-a">A SECTION</th>
+                    <th class="col-b">B SECTION</th>
+                    <th class="col-c">C SECTION</th>
+                </tr>
+            </thead>
+            <tbody id="result-list"></tbody>
+        </table>
+    </div>
 
-    <button onclick="openAdmin()" style="position:fixed; bottom:5px; right:5px; opacity:0.2; background:none; border:none; color:#fff; font-size:10px;">Admin</button>
-
+    <!-- Hidden Admin Panel -->
     <div id="admin-panel">
-        <h3 style="margin:0 0 10px 0;">Admin Panel</h3>
-        <input type="text" id="fix-time" placeholder="Time (e.g. 11:15 AM)">
-        <div style="display:flex; gap:5px; justify-content:center; margin-bottom:10px;">
-            <input type="number" id="fix-a" placeholder="A" style="width:20%;">
-            <input type="number" id="fix-b" placeholder="B" style="width:20%;">
-            <input type="number" id="fix-c" placeholder="C" style="width:20%;">
+        <h3 style="margin:0 0 12px 0; color: var(--accent-gold); font-size: 16px;">Admin Control Panel</h3>
+        
+        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
+            <p style="margin: 0 0 8px 0; font-size: 12px; color: var(--accent-red); font-weight: bold;">🚫 Blocked Numbers (Reverse/Permutation Safe)</p>
+            <input type="text" id="block-input" placeholder="e.g. 123, 456">
+            <br>
+            <button onclick="saveBlockedNumbers()" style="padding: 9px 18px; background: var(--accent-red); color: #fff; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 12px;">BLOCK NUMBERS</button>
+            <div id="blocked-list-ui" style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: left; max-height: 60px; overflow-y: auto;"></div>
         </div>
-        <button onclick="saveFix()" style="width:85%; padding:12px; background:#22b14c; color:#fff; border:none; font-weight:bold; border-radius:5px; margin-bottom:10px;">SAVE RESULT</button>
-        <button onclick="document.getElementById('admin-panel').style.display='none'" style="width:85%; padding:10px; background:#ff3131; color:#fff; border:none; font-weight:bold; border-radius:5px;">CLOSE (HATAO)</button>
+
+        <p style="margin: 0 0 6px 0; font-size: 12px; color: var(--accent-gold); font-weight: bold;">Manual Result Fixer (Auto-Queued for Draw Time)</p>
+        <select id="fix-time">
+            <option value="">Select Time Slot</option>
+        </select>
+
+        <div style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;">
+            <input type="number" id="fix-a" placeholder="A" style="width:27%; margin:0;">
+            <input type="number" id="fix-b" placeholder="B" style="width:27%; margin:0;">
+            <input type="number" id="fix-c" placeholder="C" style="width:27%; margin:0;">
+        </div>
+        <button onclick="saveFix()" style="width:85%; max-width:400px; padding:11px; background:#4ade80; color:#000; border:none; font-weight:bold; border-radius:6px; margin-bottom:8px; cursor:pointer;">QUEUE FIXED RESULT</button>
+        <br>
+        <button onclick="document.getElementById('admin-panel').style.display='none'" style="width:85%; max-width:400px; padding:9px; background:var(--accent-red); color:#fff; border:none; font-weight:bold; border-radius:6px; cursor:pointer;">CLOSE PANEL</button>
     </div>
 
     <script>
@@ -77,6 +298,98 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+        let blockedNumbers = [];
+
+        function populateTimeDropdown() {
+            const selectDropdown = document.getElementById('fix-time');
+            selectDropdown.innerHTML = '<option value="">Select Time Slot</option>';
+            for (let h = 9; h <= 22; h++) {
+                for (let m = 0; m < 60; m += 15) {
+                    if (h === 22 && m > 0) break;
+                    let t = `${h % 12 || 12}:${m === 0 ? '00' : m} ${h >= 12 ? 'PM' : 'AM'}`;
+                    let option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    selectDropdown.appendChild(option);
+                }
+            }
+        }
+        populateTimeDropdown();
+
+        db.ref('settings/blocked').on('value', (snapshot) => {
+            blockedNumbers = snapshot.val() || [];
+            renderBlockedUI();
+        });
+
+        function saveBlockedNumbers() {
+            let inputVal = document.getElementById('block-input').value.trim();
+            if(!inputVal) { alert("Please enter numbers!"); return; }
+            
+            let newItems = inputVal.split(/[\s,]+/);
+            let addedCount = 0;
+
+            newItems.forEach(item => {
+                let val = item.trim();
+                if(val && !blockedNumbers.includes(val)) {
+                    blockedNumbers.push(val);
+                    addedCount++;
+                }
+            });
+
+            if(addedCount > 0) {
+                db.ref('settings/blocked').set(blockedNumbers, () => {
+                    document.getElementById('block-input').value = '';
+                    alert(addedCount + " number(s) blocked successfully!");
+                });
+            } else {
+                alert("Numbers are already blocked or invalid!");
+            }
+        }
+
+        function removeBlock(num) {
+            blockedNumbers = blockedNumbers.filter(n => n !== num);
+            db.ref('settings/blocked').set(blockedNumbers);
+        }
+
+        function renderBlockedUI() {
+            let container = document.getElementById('blocked-list-ui');
+            if(blockedNumbers.length === 0) {
+                container.innerHTML = "No numbers blocked.";
+                return;
+            }
+            container.innerHTML = "Blocked: " + blockedNumbers.map(n => `<span style="background:#1e293b; padding:2px 6px; border-radius:4px; margin-right:4px; display:inline-block; margin-bottom:2px; color:#ff334b;">${n} <strong onclick="removeBlock('${n}')" style="cursor:pointer; color:#fff;">×</strong></span>`).join('');
+        }
+
+        function isBlocked(numStr) {
+            let s = String(numStr).padStart(3, '0');
+            let sortedS = s.split('').sort().join('');
+
+            for(let b of blockedNumbers) {
+                let cleanB = String(b).trim();
+                if(s === cleanB || s.includes(cleanB)) {
+                    return true;
+                }
+                if(cleanB.length === 3) {
+                    let sortedB = cleanB.split('').sort().join('');
+                    if(sortedS === sortedB) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function generateValidRandom() {
+            let num;
+            let safety = 0;
+            do {
+                num = Math.floor(100 + Math.random() * 900);
+                safety++;
+                if(safety > 200) break;
+            } while(isBlocked(num));
+            return num;
+        }
 
         function fillMissedResults() {
             const now = new Date();
@@ -90,10 +403,18 @@
                         if (h === 22 && m > 0) break;
                         let t = `${h % 12 || 12}:${m === 0 ? '00' : m} ${h >= 12 ? 'PM' : 'AM'}`;
                         if (!data[t]) {
-                            db.ref('results/today/' + t).set({
-                                A: Math.floor(100 + Math.random() * 900),
-                                B: Math.floor(100 + Math.random() * 900),
-                                C: Math.floor(100 + Math.random() * 900)
+                            // Pehle check karenge ki koi fixed result queue mein hai ya nahi
+                            db.ref('fixed_results/' + t).once('value', fSnap => {
+                                if(fSnap.exists()) {
+                                    db.ref('results/today/' + t).set(fSnap.val());
+                                    db.ref('fixed_results/' + t).remove();
+                                } else {
+                                    db.ref('results/today/' + t).set({
+                                        A: generateValidRandom(),
+                                        B: generateValidRandom(),
+                                        C: generateValidRandom()
+                                    });
+                                }
                             });
                         }
                     }
@@ -103,69 +424,155 @@
 
         function updateTimer() {
             const now = new Date();
+            let hrs = now.getHours();
             let mins = now.getMinutes();
+            let s = now.getSeconds();
+
+            const timerElement = document.getElementById('timer');
+            const drawTimeElement = document.getElementById('draw-time');
+            const timerLabelText = document.getElementById('timer-label-text');
+            const drawInfoBox = document.getElementById('draw-info-box');
+            const badgeStatus = document.getElementById('badge-status');
+
+            if (hrs < 9 || hrs > 22) {
+                timerElement.innerText = "CLOSED";
+                timerElement.style.fontSize = "32px";
+                timerLabelText.innerText = "STATUS";
+                drawInfoBox.style.display = "none";
+                badgeStatus.innerText = "CLOSED";
+                badgeStatus.style.color = "#ff334b";
+                return;
+            } else {
+                timerElement.style.fontSize = "38px";
+                timerLabelText.innerText = "NEXT DRAW COUNTDOWN";
+                drawInfoBox.style.display = "block";
+                badgeStatus.innerText = "LIVE";
+            }
+
+            let nextDraw = new Date(now);
             let nextMins = Math.ceil((mins + 1) / 15) * 15;
-            let nextHrs = now.getHours();
+            let nextHrs = hrs;
             if (nextMins >= 60) { nextMins = 0; nextHrs++; }
-            const nextDraw = new Date(now);
+            
             nextDraw.setHours(nextHrs, nextMins, 0);
+
             const diff = nextDraw - now;
+            if(diff <= 0) {
+                timerElement.innerText = "00:00:00";
+                return;
+            }
+
             const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
             const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-            const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
-            document.getElementById('draw-time').innerText = nextDraw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const sec = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            
+            timerElement.innerText = `${h}:${m}:${sec}`;
+            drawTimeElement.innerText = nextDraw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+            // ** जब समय पूरा होगा, तब यह चेक करेगा कि इस समय का कोई फिक्स रिजल्ट सेव है या नहीं। अगर है तो वह लाइव हो जाएगा, वरना रैंडम आ जाएगा। **
             if ((mins + 4) % 15 === 0 && s === "00") {
                 const drawStr = nextDraw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                db.ref('fixed_results/' + drawStr).once('value', s => {
+                
+                db.ref('fixed_results/' + drawStr).once('value', snapshot => {
                     let a, b, c;
-                    if(s.exists()){ a=s.val().A; b=s.val().B; c=s.val().C; db.ref('fixed_results/'+drawStr).remove(); }
-                    else { a=Math.floor(100+Math.random()*900); b=Math.floor(100+Math.random()*900); c=Math.floor(100+Math.random()*900); }
-                    db.ref('results/today/' + drawStr).set({A:a, B:b, C:c});
+                    if(snapshot.exists()){ 
+                        a = snapshot.val().A; 
+                        b = snapshot.val().B; 
+                        c = snapshot.val().C; 
+                        db.ref('fixed_results/' + drawStr).remove(); // इस्तेमाल होने के बाद हटा देंगे
+                    } else { 
+                        a = generateValidRandom(); 
+                        b = generateValidRandom(); 
+                        c = generateValidRandom(); 
+                    }
+                    db.ref('results/today/' + drawStr).set({A: a, B: b, C: c});
                 });
             }
         }
         setInterval(updateTimer, 1000);
 
+        let activeListener = null;
         function loadResults(type) {
-            db.ref('results/' + type).on('value', (snapshot) => {
-                const list = document.getElementById('result-list');
+            const list = document.getElementById('result-list');
+            
+            if(type === 'today') {
+                document.getElementById('today-btn').style.background = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)';
+                document.getElementById('today-btn').style.color = '#000';
+                document.getElementById('yesterday-btn').style.background = '#1e293b';
+                document.getElementById('yesterday-btn').style.color = 'var(--text-muted)';
+            } else {
+                document.getElementById('yesterday-btn').style.background = 'linear-gradient(135deg, #334155 0%, #1e293b 100%)';
+                document.getElementById('yesterday-btn').style.color = '#fff';
+                document.getElementById('today-btn').style.background = '#1e293b';
+                document.getElementById('today-btn').style.color = 'var(--text-muted)';
+            }
+
+            if (activeListener) {
+                db.ref('results/' + (type === 'today' ? 'yesterday' : 'today')).off('value', activeListener);
+            }
+
+            activeListener = db.ref('results/' + type).on('value', (snapshot) => {
                 list.innerHTML = "";
                 const data = snapshot.val() || {};
                 for (let h = 9; h <= 22; h++) {
                     for (let m = 0; m < 60; m += 15) {
                         if (h === 22 && m > 0) break;
                         let t = `${h % 12 || 12}:${m === 0 ? '00' : m} ${h >= 12 ? 'PM' : 'AM'}`;
-                        let res = data[t] || {A: '', B: '', C: ''};
-                        list.innerHTML += `<tr><td class="col-time">${t}</td><td><small>A</small>${res.A}</td><td><small>B</small>${res.B}</td><td><small>C</small>${res.C}</td></tr>`;
+                        let res = data[t] || {A: '-', B: '-', C: '-'};
+                        list.innerHTML += `<tr><td class="col-time">${t}</td><td class="col-a"><small>A</small>${res.A}</td><td class="col-b"><small>B</small>${res.B}</td><td class="col-c"><small>C</small>${res.C}</td></tr>`;
                     }
                 }
             });
         }
 
-        // --- PASSWORD UPDATE ---
-        function openAdmin() { 
-            let pin = prompt("Enter Admin PIN:");
-            if(pin === "5566") { // Naya PIN yahan hai
-                document.getElementById('admin-panel').style.display='block'; 
-            } else if(pin !== null) {
-                alert("Wrong PIN!");
+        let tapCount = 0;
+        let tapTimer = null;
+
+        function handleHeaderTap() {
+            tapCount++;
+            if (tapTimer) clearTimeout(tapTimer);
+            
+            if (tapCount === 5) {
+                tapCount = 0;
+                let pin = prompt("Enter Admin PIN:");
+                if(pin === "5566") { 
+                    document.getElementById('admin-panel').style.display = 'block'; 
+                } else if(pin !== null) {
+                    alert("Wrong PIN!");
+                }
+            } else {
+                tapTimer = setTimeout(() => {
+                    tapCount = 0;
+                }, 1000);
             }
         }
 
+        // ** यह फिक्स रिजल्ट को सीधे 'fixed_results' फोल्डर में सेव कर देगा, और सही समय आने पर अपने आप स्क्रीन पर आ जाएगा **
         function saveFix() {
             const t = document.getElementById('fix-time').value;
             const a = document.getElementById('fix-a').value;
             const b = document.getElementById('fix-b').value;
             const c = document.getElementById('fix-c').value;
-            if(!t) { alert("Please enter time!"); return; }
-            db.ref('results/today/' + t).set({A:a, B:b, C:c});
-            alert("Result Saved for " + t);
+            if(!t) { alert("Please select time!"); return; }
+            if(!a || !b || !c) { alert("Please enter A, B, and C numbers!"); return; }
+
+            db.ref('fixed_results/' + t).set({A: a, B: b, C: c}, (error) => {
+                if(!error) {
+                    alert("Result queued successfully! It will automatically appear when " + t + " draw time arrives.");
+                    document.getElementById('fix-a').value = '';
+                    document.getElementById('fix-b').value = '';
+                    document.getElementById('fix-c').value = '';
+                    document.getElementById('admin-panel').style.display = 'none';
+                } else {
+                    alert("Failed to save: " + error.message);
+                }
+            });
         }
 
         fillMissedResults();
-        loadResults('today');
+        setTimeout(() => {
+            loadResults('today');
+        }, 1000);
     </script>
 </body>
 </html>

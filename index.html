@@ -2,284 +2,355 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CANVAS 3D LIVE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CANVAS LIVE 3D - Official Terminal</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --card-bg: #131b2e;
-            --accent-red: #ff334b;
-            --accent-gold: #ffc107;
-            --text-main: #ffffff;
-            --text-muted: #8c9bae;
-            --border-color: #1e293b;
+            --bg-body: #0a0d14;
+            --surface-card: #131823;
+            --surface-border: #222b3e;
+            --text-main: #f1f5f9;
+            --text-muted: #64748b;
+            --accent-gold: #f59e0b;
+            --accent-gold-glow: rgba(245, 158, 11, 0.15);
+            --live-green: #10b981;
+            --live-green-bg: rgba(16, 185, 129, 0.1);
+            --col-a: #38bdf8;
+            --col-b: #34d399;
+            --col-c: #a78bfa;
         }
 
-        body { 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
-            font-family: 'Montserrat', sans-serif; 
-            text-align: center; 
+        * { 
+            box-sizing: border-box; 
             margin: 0; 
             padding: 0; 
         }
 
-        .header-container {
-            background: linear-gradient(180deg, #111827 0%, var(--bg-color) 100%);
-            padding: 22px 15px 15px 15px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            padding: 10px;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 100vh;
         }
 
-        .header { 
-            font-size: 26px; 
-            font-weight: 800; 
-            letter-spacing: 1.5px; 
+        /* Top Header Board */
+        .header-container {
+            background: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .header-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+        }
+
+        .header-title span {
+            color: var(--accent-gold);
+        }
+
+        .header-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 2px;
         }
 
         .live-badge {
-            background: rgba(255, 51, 75, 0.15);
-            color: var(--accent-red);
-            font-size: 11px;
-            padding: 4px 10px;
-            border-radius: 20px;
+            background: var(--live-green-bg);
+            color: var(--live-green);
+            font-size: 0.65rem;
             font-weight: 700;
-            border: 1px solid rgba(255, 51, 75, 0.3);
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .red-text { color: var(--accent-red); }
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--live-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--live-green);
+            animation: pulse 1.5px infinite;
+        }
 
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* Control / Timer Box */
         .timer-container {
-            background: var(--card-bg);
-            margin: 15px auto;
-            max-width: 90%;
-            padding: 15px;
+            background: var(--surface-card);
+            border: 1px solid var(--surface-border);
             border-radius: 12px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .timer-label { 
-            font-size: 11px; 
-            color: var(--text-muted); 
-            letter-spacing: 1.5px;
-            font-weight: 600;
-            margin-bottom: 4px;
+        .timer-info-group {
+            display: flex;
+            flex-direction: column;
         }
 
-        .timer-clock { 
-            font-family: 'Roboto Mono', monospace;
-            font-size: 34px; 
-            color: var(--accent-red); 
-            font-weight: 700; 
-            letter-spacing: 2px;
-            text-shadow: 0 0 15px rgba(255, 51, 75, 0.2);
-        }
-
-        .draw-info {
-            font-size: 12px;
-            color: var(--text-main);
-            margin-top: 4px;
-            font-weight: 600;
-        }
-
-        .btn-container { 
-            display: flex; 
-            justify-content: center; 
-            gap: 12px; 
-            padding: 10px 15px 20px 15px; 
-            max-width: 90%;
-            margin: 0 auto;
-        }
-
-        .btn { 
-            flex: 1; 
-            padding: 14px; 
-            border-radius: 8px; 
-            border: none; 
-            font-size: 14px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            transition: all 0.3s ease;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-today { 
-            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); 
-            color: #000; 
-            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-        }
-
-        .btn-yesterday { 
-            background: #1e293b; 
-            color: var(--text-muted); 
-            border: 1px solid #334155;
-        }
-
-        .table-wrapper {
-            max-width: 100%;
-            overflow-x: auto;
-            padding: 0 10px 30px 10px;
-        }
-
-        table { 
-            width: 100%; 
-            max-width: 600px;
-            margin: 0 auto;
-            border-collapse: separate; 
-            border-spacing: 0 6px;
-        }
-
-        th { 
-            padding: 12px; 
-            font-size: 11px; 
+        .timer-label {
+            font-size: 0.68rem;
             color: var(--text-muted);
-            letter-spacing: 1px;
             font-weight: 600;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
         }
 
-        td { 
-            background: var(--card-bg);
-            padding: 14px 10px; 
-            font-size: 18px; 
-            font-weight: 700; 
-            font-family: 'Roboto Mono', monospace;
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
+        .timer-clock {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .target-slot {
+            text-align: right;
+        }
+
+        .target-time-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 2px;
+        }
+
+        /* Tab Switchers */
+        .btn-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--surface-border);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-today {
+            background: var(--accent-gold);
+            color: #000;
+            border-color: var(--accent-gold);
+            box-shadow: 0 4px 12px var(--accent-gold-glow);
+        }
+
+        .btn-yesterday {
+            background: var(--surface-card);
+            color: var(--text-muted);
+        }
+
+        /* Realistic Data Grid */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 60px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 4px;
+        }
+
+        th {
+            background: rgba(19, 24, 35, 0.5);
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--surface-border);
+        }
+
+        th:first-child { text-align: left; border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
+        th:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+
+        td {
+            background: var(--surface-card);
+            padding: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            border-top: 1px solid var(--surface-border);
+            border-bottom: 1px solid var(--surface-border);
+            text-align: center;
+            letter-spacing: 1px;
         }
 
         td:first-child {
-            border-left: 1px solid var(--border-color);
+            border-left: 1px solid var(--surface-border);
             border-top-left-radius: 8px;
             border-bottom-left-radius: 8px;
+            text-align: left;
         }
 
         td:last-child {
-            border-right: 1px solid var(--border-color);
+            border-right: 1px solid var(--surface-border);
             border-top-right-radius: 8px;
             border-bottom-right-radius: 8px;
         }
 
-        .col-time { 
-            background: #1a233a; 
-            width: 28%; 
-            font-size: 13px; 
-            color: var(--text-main);
-            font-family: 'Montserrat', sans-serif;
+        .col-time {
+            width: 34%;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
             font-weight: 600;
         }
 
-        .col-a { color: #38bdf8; width: 24%; }
-        .col-b { color: #4ade80; width: 24%; }
-        .col-c { color: #c084fc; width: 24%; }
+        .col-a { color: var(--col-a); width: 22%; }
+        .col-b { color: var(--col-b); width: 22%; }
+        .col-c { color: var(--col-c); width: 22%; }
 
-        small { 
-            font-size: 9px; 
-            opacity: 0.6; 
-            margin-right: 4px; 
-            font-family: 'Montserrat', sans-serif;
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        #admin-panel { 
-            display: none; 
-            background: #0f172a; 
-            padding: 20px; 
-            border-top: 2px solid var(--accent-gold); 
-            position: fixed; 
-            bottom: 0; 
+        /* Admin Console */
+        #admin-panel {
+            display: none;
+            background: #0d111a;
+            border: 1px solid var(--surface-border);
+            border-top: 2px solid var(--accent-gold);
+            padding: 14px;
+            position: fixed;
+            bottom: 0;
             left: 0;
-            width: 100%; 
-            z-index: 9999; 
-            box-sizing: border-box; 
-            box-shadow: 0 -10px 25px rgba(0,0,0,0.8);
-            max-height: 85vh;
+            width: 100%;
+            z-index: 9999;
+            box-sizing: border-box;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.9);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            max-height: 80vh;
             overflow-y: auto;
         }
 
-        input, select { 
-            width: 85%; 
-            max-width: 400px;
-            padding: 11px; 
-            margin-bottom: 10px; 
-            border-radius: 6px; 
-            border: 1px solid var(--border-color); 
-            background: var(--bg-color);
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--surface-border);
+            background: var(--bg-body);
             color: #fff;
-            font-size: 14px;
-            box-sizing: border-box;
+            font-size: 0.8rem;
+            outline: none;
+        }
+        input:focus, select:focus {
+            border-color: var(--accent-gold);
         }
     </style>
 </head>
 <body>
 
     <div class="header-container" onclick="handleHeaderTap()">
-        <div class="header">
-            CANVAS <span class="red-text">3D LIVE</span>
-            <span class="live-badge" id="badge-status">LIVE</span>
+        <div class="header-brand">
+            <div class="header-title">CANVAS <span>LIVE 3D</span></div>
+            <div class="header-sub">Professional Terminal</div>
+        </div>
+        <div class="live-badge" id="badge-status">
+            <div class="live-dot"></div> ONLINE
         </div>
     </div>
     
     <div class="timer-container">
-        <div class="timer-label" id="timer-label-text">NEXT DRAW COUNTDOWN</div>
-        <div id="timer" class="timer-clock">00:00:00</div>
-        <div class="draw-info" id="draw-info-box">Target Time: <span id="draw-time" style="color: var(--accent-gold);">--:--</span></div>
+        <div class="timer-info-group">
+            <div class="timer-label" id="timer-label-text">Next Draw Countdown</div>
+            <div id="timer" class="timer-clock">--:--:--</div>
+        </div>
+        <div class="target-slot">
+            <div class="timer-label">Target Slot</div>
+            <div class="target-time-val" id="draw-time">--:--</div>
+        </div>
     </div>
 
     <div class="btn-container">
-        <button id="today-btn" class="btn btn-today" onclick="loadResults('today')">TODAY RESULTS</button>
-        <button id="yesterday-btn" class="btn btn-yesterday" onclick="loadResults('yesterday')">YESTERDAY</button>
+        <button id="today-btn" class="btn btn-today" onclick="loadResults('today')">Today Results</button>
+        <button id="yesterday-btn" class="btn btn-yesterday" onclick="loadResults('yesterday')">Yesterday</button>
     </div>
 
     <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
-                    <th class="col-time">TIME SLOT</th>
-                    <th class="col-a">A SECTION</th>
-                    <th class="col-b">B SECTION</th>
-                    <th class="col-c">C SECTION</th>
+                    <th>Time Slot</th>
+                    <th>Section A</th>
+                    <th>Section B</th>
+                    <th>Section C</th>
                 </tr>
             </thead>
             <tbody id="result-list"></tbody>
         </table>
     </div>
 
-    <!-- Hidden Admin Panel -->
+    <!-- Admin Panel -->
     <div id="admin-panel">
-        <h3 style="margin:0 0 12px 0; color: var(--accent-gold); font-size: 16px;">Admin Control Panel</h3>
+        <h3 style="margin:0 0 10px 0; color: var(--accent-gold); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Admin Control Deck</h3>
         
-        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
-            <p style="margin: 0 0 8px 0; font-size: 12px; color: var(--accent-red); font-weight: bold;">🚫 Blocked Numbers (Reverse/Permutation Safe)</p>
+        <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--surface-border);">
+            <p style="margin: 0 0 6px 0; font-size: 0.7rem; color: #ef4444; font-weight: bold;">🚫 Block Numbers</p>
             <input type="text" id="block-input" placeholder="e.g. 123, 456">
-            <br>
-            <button onclick="saveBlockedNumbers()" style="padding: 9px 18px; background: var(--accent-red); color: #fff; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 12px;">BLOCK NUMBERS</button>
-            <div id="blocked-list-ui" style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: left; max-height: 60px; overflow-y: auto;"></div>
+            <button onclick="saveBlockedNumbers()" style="width:100%; padding: 8px; background: #ef4444; color: #fff; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 0.7rem; text-transform: uppercase;">Block Numbers</button>
+            <div id="blocked-list-ui" style="font-size: 0.65rem; color: var(--text-muted); margin-top: 6px; text-align: left; max-height: 50px; overflow-y: auto;"></div>
         </div>
 
-        <p style="margin: 0 0 6px 0; font-size: 12px; color: var(--accent-gold); font-weight: bold;">Manual Result Fixer (Auto-Queued for Draw Time)</p>
+        <p style="margin: 0 0 4px 0; font-size: 0.7rem; color: var(--accent-gold); font-weight: bold;">Manual Result Fixer</p>
         <select id="fix-time">
             <option value="">Select Time Slot</option>
         </select>
 
-        <div style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;">
-            <input type="number" id="fix-a" placeholder="A" style="width:27%; margin:0;">
-            <input type="number" id="fix-b" placeholder="B" style="width:27%; margin:0;">
-            <input type="number" id="fix-c" placeholder="C" style="width:27%; margin:0;">
+        <div style="display:flex; gap:6px; justify-content:center; margin-bottom:8px;">
+            <input type="number" id="fix-a" placeholder="A" style="width:32%; margin:0;">
+            <input type="number" id="fix-b" placeholder="B" style="width:32%; margin:0;">
+            <input type="number" id="fix-c" placeholder="C" style="width:32%; margin:0;">
         </div>
-        <button onclick="saveFix()" style="width:85%; max-width:400px; padding:11px; background:#4ade80; color:#000; border:none; font-weight:bold; border-radius:6px; margin-bottom:8px; cursor:pointer;">QUEUE FIXED RESULT</button>
-        <br>
-        <button onclick="document.getElementById('admin-panel').style.display='none'" style="width:85%; max-width:400px; padding:9px; background:var(--accent-red); color:#fff; border:none; font-weight:bold; border-radius:6px; cursor:pointer;">CLOSE PANEL</button>
+        <button onclick="saveFix()" style="width:100%; padding:9px; background:var(--live-green); color:#000; border:none; font-weight:bold; border-radius:6px; margin-bottom:6px; cursor:pointer; text-transform:uppercase; font-size:0.7rem;">Queue Fixed Result</button>
+        <button onclick="document.getElementById('admin-panel').style.display='none'" style="width:100%; padding:8px; background:var(--surface-border); color:#fff; border:none; font-weight:bold; border-radius:6px; cursor:pointer; text-transform:uppercase; font-size:0.7rem;">Close Panel</button>
     </div>
 
     <script>
@@ -293,6 +364,21 @@
         const db = firebase.database();
 
         let blockedNumbers = [];
+        let tapCount = 0;
+
+        function handleHeaderTap() {
+            tapCount++;
+            if (tapCount === 4) {
+                let pass = prompt("Enter Admin Password:");
+                if (pass === "24081996") {
+                    document.getElementById('admin-panel').style.display = 'block';
+                } else if (pass !== null) {
+                    alert("Incorrect Password!");
+                }
+                tapCount = 0;
+            }
+            setTimeout(() => { tapCount = 0; }, 3000);
+        }
 
         function populateTimeDropdown() {
             const selectDropdown = document.getElementById('fix-time');
@@ -336,7 +422,7 @@
                     alert(addedCount + " number(s) blocked successfully!");
                 });
             } else {
-                alert("Numbers are already blocked or invalid!");
+                alert("Numbers already blocked or invalid!");
             }
         }
 
@@ -351,7 +437,26 @@
                 container.innerHTML = "No numbers blocked.";
                 return;
             }
-            container.innerHTML = "Blocked: " + blockedNumbers.map(n => `<span style="background:#1e293b; padding:2px 6px; border-radius:4px; margin-right:4px; display:inline-block; margin-bottom:2px; color:#ff334b;">${n} <strong onclick="removeBlock('${n}')" style="cursor:pointer; color:#fff;">×</strong></span>`).join('');
+            container.innerHTML = "Blocked: " + blockedNumbers.map(n => `<span style="background:#222b3e; padding:2px 5px; border-radius:3px; margin-right:3px; display:inline-block; margin-bottom:2px; color:#ef4444;">${n} <strong onclick="removeBlock('${n}')" style="cursor:pointer; color:#fff;">×</strong></span>`).join('');
+        }
+
+        function saveFix() {
+            let timeSlot = document.getElementById('fix-time').value;
+            let a = document.getElementById('fix-a').value;
+            let b = document.getElementById('fix-b').value;
+            let c = document.getElementById('fix-c').value;
+
+            if(!timeSlot || !a || !b || !c) {
+                alert("Please select time slot and fill all A, B, C values!");
+                return;
+            }
+
+            db.ref('fixed_results/' + timeSlot).set({A: a, B: b, C: c}, () => {
+                alert("Result successfully queued for " + timeSlot);
+                document.getElementById('fix-a').value = '';
+                document.getElementById('fix-b').value = '';
+                document.getElementById('fix-c').value = '';
+            });
         }
 
         function isBlocked(numStr) {
@@ -360,58 +465,20 @@
 
             for(let b of blockedNumbers) {
                 let cleanB = String(b).trim();
-                if(s === cleanB || s.includes(cleanB)) {
-                    return true;
-                }
-                if(cleanB.length === 3) {
-                    let sortedB = cleanB.split('').sort().join('');
-                    if(sortedS === sortedB) {
-                        return true;
-                    }
-                }
+                if(s === cleanB || s.includes(cleanB)) return true;
+                if(cleanB.length === 3 && sortedS === cleanB.split('').sort().join('')) return true;
             }
             return false;
         }
 
         function generateValidRandom() {
-            let num;
-            let safety = 0;
+            let num, safety = 0;
             do {
                 num = Math.floor(100 + Math.random() * 900);
                 safety++;
                 if(safety > 200) break;
             } while(isBlocked(num));
             return num;
-        }
-
-        function fillMissedResults() {
-            const now = new Date();
-            const currentHour = now.getHours();
-            const currentMin = now.getMinutes();
-            db.ref('results/today').once('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                for (let h = 9; h <= currentHour; h++) {
-                    for (let m = 0; m < 60; m += 15) {
-                        if (h === currentHour && m > currentMin) break;
-                        if (h === 22 && m > 0) break;
-                        let t = `${h % 12 || 12}:${m === 0 ? '00' : m} ${h >= 12 ? 'PM' : 'AM'}`;
-                        if (!data[t]) {
-                            db.ref('fixed_results/' + t).once('value', fSnap => {
-                                if(fSnap.exists()) {
-                                    db.ref('results/today/' + t).set(fSnap.val());
-                                    db.ref('fixed_results/' + t).remove();
-                                } else {
-                                    db.ref('results/today/' + t).set({
-                                        A: generateValidRandom(),
-                                        B: generateValidRandom(),
-                                        C: generateValidRandom()
-                                    });
-                                }
-                            });
-                        }
-                    }
-                }
-            });
         }
 
         function updateTimer() {
@@ -423,25 +490,17 @@
             const timerElement = document.getElementById('timer');
             const drawTimeElement = document.getElementById('draw-time');
             const timerLabelText = document.getElementById('timer-label-text');
-            const drawInfoBox = document.getElementById('draw-info-box');
             const badgeStatus = document.getElementById('badge-status');
 
             if (hrs < 9 || hrs > 22) {
                 timerElement.innerText = "CLOSED";
-                timerElement.style.fontSize = "34px";
-                timerLabelText.innerText = "STATUS";
-                drawInfoBox.style.display = "none";
-                badgeStatus.innerText = "CLOSED";
-                badgeStatus.style.color = "#ff334b";
-                badgeStatus.style.background = "rgba(255, 51, 75, 0.15)";
-                badgeStatus.style.borderColor = "rgba(255, 51, 75, 0.3)";
+                timerLabelText.innerText = "MARKET STATUS";
+                drawTimeElement.innerText = "--:--";
+                badgeStatus.innerHTML = `<div class="live-dot" style="background:#ef4444; box-shadow:0 0 8px #ef4444;"></div> CLOSED`;
+                badgeStatus.style.background = "rgba(239, 68, 68, 0.1)";
+                badgeStatus.style.color = "#ef4444";
+                badgeStatus.style.borderColor = "rgba(239, 68, 68, 0.2)";
                 return;
-            } else {
-                timerElement.style.fontSize = "34px";
-                timerLabelText.innerText = "NEXT DRAW COUNTDOWN";
-                drawInfoBox.style.display = "block";
-                badgeStatus.innerText = "LIVE";
-                badgeStatus.style.color = "#ff334b";
             }
 
             let nextDraw = new Date(now);
@@ -450,8 +509,8 @@
             if (nextMins >= 60) { nextMins = 0; nextHrs++; }
             
             nextDraw.setHours(nextHrs, nextMins, 0);
-
             const diff = nextDraw - now;
+            
             if(diff <= 0) {
                 timerElement.innerText = "00:00:00";
                 return;
@@ -464,9 +523,8 @@
             timerElement.innerText = `${h}:${m}:${sec}`;
             drawTimeElement.innerText = nextDraw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            if ((mins + 4) % 15 === 0 && s === "00") {
+            if ((mins % 15 === 0) && s === 0) {
                 const drawStr = nextDraw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
                 db.ref('fixed_results/' + drawStr).once('value', snapshot => {
                     let a, b, c;
                     if(snapshot.exists()){ 
@@ -490,15 +548,11 @@
             const list = document.getElementById('result-list');
             
             if(type === 'today') {
-                document.getElementById('today-btn').style.background = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)';
-                document.getElementById('today-btn').style.color = '#000';
-                document.getElementById('yesterday-btn').style.background = '#1e293b';
-                document.getElementById('yesterday-btn').style.color = 'var(--text-muted)';
+                document.getElementById('today-btn').className = 'btn btn-today';
+                document.getElementById('yesterday-btn').className = 'btn btn-yesterday';
             } else {
-                document.getElementById('yesterday-btn').style.background = 'linear-gradient(135deg, #334155 0%, #1e293b 100%)';
-                document.getElementById('yesterday-btn').style.color = '#fff';
-                document.getElementById('today-btn').style.background = '#1e293b';
-                document.getElementById('today-btn').style.color = 'var(--text-muted)';
+                document.getElementById('yesterday-btn').className = 'btn btn-today';
+                document.getElementById('today-btn').className = 'btn btn-yesterday';
             }
 
             if (activeListener) {
@@ -512,60 +566,21 @@
                     for (let m = 0; m < 60; m += 15) {
                         if (h === 22 && m > 0) break;
                         let t = `${h % 12 || 12}:${m === 0 ? '00' : m} ${h >= 12 ? 'PM' : 'AM'}`;
-                        let res = data[t] || {A: '-', B: '-', C: '-'};
-                        list.innerHTML += `<tr><td class="col-time">${t}</td><td class="col-a"><small>A</small>${res.A}</td><td class="col-b"><small>B</small>${res.B}</td><td class="col-c"><small>C</small>${res.C}</td></tr>`;
+                        let res = data[t] || {A: '---', B: '---', C: '---'};
+                        
+                        let row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td class="col-time">${t}</td>
+                            <td class="col-a">${res.A}</td>
+                            <td class="col-b">${res.B}</td>
+                            <td class="col-c">${res.C}</td>
+                        `;
+                        list.prepend(row);
                     }
                 }
             });
         }
-
-        let tapCount = 0;
-        let tapTimer = null;
-
-        function handleHeaderTap() {
-            tapCount++;
-            if (tapTimer) clearTimeout(tapTimer);
-            
-            if (tapCount === 5) {
-                tapCount = 0;
-                let pin = prompt("Enter Admin PIN:");
-                if(pin === "5566") { 
-                    document.getElementById('admin-panel').style.display = 'block'; 
-                } else if(pin !== null) {
-                    alert("Wrong PIN!");
-                }
-            } else {
-                tapTimer = setTimeout(() => {
-                    tapCount = 0;
-                }, 1000);
-            }
-        }
-
-        function saveFix() {
-            const t = document.getElementById('fix-time').value;
-            const a = document.getElementById('fix-a').value;
-            const b = document.getElementById('fix-b').value;
-            const c = document.getElementById('fix-c').value;
-            if(!t) { alert("Please select time!"); return; }
-            if(!a || !b || !c) { alert("Please enter A, B, and C numbers!"); return; }
-
-            db.ref('fixed_results/' + t).set({A: a, B: b, C: c}, (error) => {
-                if(!error) {
-                    alert("Result queued successfully! It will automatically appear when " + t + " draw time arrives.");
-                    document.getElementById('fix-a').value = '';
-                    document.getElementById('fix-b').value = '';
-                    document.getElementById('fix-c').value = '';
-                    document.getElementById('admin-panel').style.display = 'none';
-                } else {
-                    alert("Failed to save: " + error.message);
-                }
-            });
-        }
-
-        fillMissedResults();
-        setTimeout(() => {
-            loadResults('today');
-        }, 1000);
+        loadResults('today');
     </script>
 </body>
 </html>

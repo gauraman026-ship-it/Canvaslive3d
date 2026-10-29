@@ -1,13 +1,16 @@
 import https from 'https';
 import admin from 'firebase-admin';
 
-// Initialize Firebase Admin safely handling newlines in private key
+// Clean and format private key safely (removes accidental quotes and fixes newlines)
+let rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY || '';
+const formattedPrivateKey = rawPrivateKey.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined
+      privateKey: formattedPrivateKey
     }),
     databaseURL: "https://canvas-live-result-default-rtdb.firebaseio.com"
   });

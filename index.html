@@ -3,556 +3,991 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CANVAS LIVE 3D - Official Terminal</title>
-    <!-- Firebase App & Realtime Database CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+    <title>CΛNVΛS 3D™ SKILL GAME - KOHINOOR ENTERPRISES</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root {
-            --bg-body: #0a0d14;
-            --surface-card: #131823;
-            --surface-border: #222b3e;
-            --text-main: #f1f5f9;
-            --text-muted: #64748b;
-            --accent-gold: #f59e0b;
-            --accent-gold-glow: rgba(245, 158, 11, 0.15);
-            --live-green: #10b981;
-            --live-green-bg: rgba(16, 185, 129, 0.1);
-            --col-a: #38bdf8;
-            --col-b: #38d399;
-            --col-c: #fa78bfa;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            padding: 10px;
-            -webkit-tap-highlight-color: transparent;
-            min-height: 100vh;
-        }
-
-        /* Top Header Board */
-        .header-container {
-            background: linear-gradient(180deg, #111827 0%, var(--surface-card) 100%);
-            border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .brand-row {
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { 
+            background: #030303; 
+            color: #fff; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            text-align: center; 
+            overflow: hidden;
+            position: relative;
+            height: 100dvh; 
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            flex-direction: column;
         }
 
-        .brand-title {
-            font-size: 16px;
+        #user-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        /* Updated Cream Color Header Panel */
+        .header-panel { 
+            background: linear-gradient(135deg, #fff8e9, #f3e5c8, #fff9ed); 
+            border-bottom: 2px solid rgba(213, 183, 122, 0.8); 
+            padding: 5px 6px; 
+            margin-bottom: 2px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); 
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, #a47b32, #ffffff, #a47b32, transparent);
+        }
+
+        /* Banner Style */
+        .canvas-banner {
+            width: 100%;
+            max-width: 100%;
+            background: transparent;
+            border: 1px solid rgba(213, 183, 122, 0.6);
+            border-radius: 5px;
+            padding: 4px 6px;
+            margin-bottom: 3px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        .canvas-title {
+            font-size: 5.5vw;
+            font-weight: 700;
+            letter-spacing: 2px;
+            line-height: 1.1;
+            color: #111111;
+            text-transform: uppercase;
+        }
+
+        .canvas-skill {
+            font-size: 3vw;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #a47b32;
+            text-transform: uppercase;
+            margin-top: 1px;
+            line-height: 1.1;
+        }
+
+        .canvas-company {
+            margin-top: 2px;
+            font-size: 2.2vw;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #29251e;
+            text-transform: uppercase;
+        }
+
+        .canvas-subtitle {
+            margin-top: 1px;
+            font-size: 2vw;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #a47b32;
+            text-transform: uppercase;
+        }
+
+        @media (min-width: 480px) {
+            .canvas-title { font-size: 18px; }
+            .canvas-skill { font-size: 10px; }
+            .canvas-company { font-size: 8px; }
+            .canvas-subtitle { font-size: 7px; }
+        }
+        
+        .scrolling-banner-outer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(18, 15, 13, 0.9);
+            border-top: 1px solid rgba(255, 215, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 4px;
+            margin-bottom: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            padding: 1px 2px;
+        }
+
+        .scrolling-banner-container {
+            width: 100%;
+            overflow: hidden;
+            padding: 1px 0;
+        }
+
+        .scrolling-track {
+            display: flex;
+            gap: 40px;
+            width: max-content;
+            animation: scrollBanner 42s linear infinite;
+            align-items: center;
+        }
+
+        .scrolling-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes scrollBanner {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .marquee-text-item {
+            font-size: 8.5px;
             font-weight: 800;
             letter-spacing: 1px;
-            color: var(--text-main);
-            cursor: pointer;
-        }
-
-        .brand-title span {
-            color: var(--accent-gold);
-        }
-
-        .status-badge {
-            display: flex;
+            text-transform: uppercase;
+            color: #f1f5f9 !important;
+            -webkit-text-fill-color: #f1f5f9 !important;
+            background: none !important;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+            white-space: nowrap;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 4px 10px;
-            border-radius: 20px;
+        }
+
+        /* Live Clock styled clearly for Cream Background */
+        .clock { 
+            font-size: 11.5px; 
+            color: #0b5e20; 
+            font-weight: 900; 
+            margin: 2px 0; 
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); 
+            font-family: monospace; 
+            letter-spacing: 1px;
+        }
+        
+        /* Slot Display */
+        .slot-display { 
+            display: flex; 
+            justify-content: space-between; 
+            gap: 6px;
+            max-width: 300px;
+            margin: 2px auto 0 auto;
+            background: transparent; 
+            border: none; 
+            border-radius: 4px; 
+            padding: 0; 
+        }
+        .slot-box { 
+            flex: 1;
+            font-size: 6.5px; 
+            color: #4a3b1c; 
+            text-transform: uppercase; 
+            font-weight: 800; 
+            letter-spacing: 0.5px; 
+            background: rgba(255, 255, 255, 0.5);
+            border: 0.5px solid rgba(164, 123, 50, 0.4); 
+            padding: 2px 3px;
+            border-radius: 3px;
+            text-align: center;
+        }
+        .slot-box span { 
+            display: block; 
+            font-size: 9.5px; 
+            color: #111111; 
+            font-weight: 900; 
+            margin-top: 1px; 
+            font-family: monospace; 
+            letter-spacing: 0.8px;
+        }
+        #next-slot-view {
+            color: #0b5e20 !important;
+        }
+
+        @keyframes pulseGlow { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .live-tag { color: #ef4444; font-size: 6.5px; font-weight: 900; animation: pulseGlow 1.2s infinite; display: inline-block; margin-right: 2px; }
+
+        .loading-text {
+            color: #3b82f6 !important;
             font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            background: var(--surface-border);
-            color: var(--text-muted);
-        }
-
-        .status-badge.live {
-            background: var(--live-green-bg);
-            color: var(--live-green);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-
-        .status-badge.live .status-dot {
-            box-shadow: 0 0 8px var(--live-green);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(1.3); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .info-card {
-            background: rgba(10, 13, 20, 0.6);
-            border: 1px solid var(--surface-border);
-            border-radius: 8px;
-            padding: 8px 10px;
-        }
-
-        .info-label {
-            font-size: 10px;
-            font-weight: 600;
-            color: var(--text-muted);
+            font-weight: 800;
+            padding: 30px;
+            letter-spacing: 1px;
             text-transform: uppercase;
+            animation: pulseGlow 1.2s infinite;
+        }
+
+        .date-picker-bar {
+            background: linear-gradient(135deg, #16120e, #221c19);
+            margin: 0 6px 3px 6px;
+            padding: 3px 10px;
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .date-picker-bar label {
+            font-size: 8px;
+            font-weight: 700;
+            color: #ffd700 !important;
             letter-spacing: 0.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .date-picker-bar input[type="date"] {
+            background: #030303;
+            border: 1.5px solid rgba(255, 255, 255, 0.65);
+            color: #ffffff !important;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 9.5px;
+            font-family: monospace;
+            font-weight: 900;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0 6px;
+            padding-bottom: 0;
+            background: #030303;
+            display: flex;
+            flex-direction: column;
+        }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 3px; background: #030303; padding: 0; table-layout: fixed; }
+        th { 
+            background: linear-gradient(135deg, #221c19, #16120e); 
+            color: #ffd700; 
+            padding: 4px 4px; 
+            font-size: 8.5px; 
+            border-top: 1px solid rgba(255, 215, 0, 0.4);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.4); 
+            letter-spacing: 0.6px; 
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        th:nth-child(1) { width: 22%; }
+        th:nth-child(2), th:nth-child(3), th:nth-child(4) { width: 26%; }
+        th:first-child { border-radius: 3px 0 0 3px; border-left: 1px solid rgba(255, 215, 0, 0.4); }
+        th:last-child { border-radius: 0 3px 3px 0; border-right: 1px solid rgba(255, 215, 0, 0.4); }
+        td { padding: 0 2px; }
+        
+        .time-col { 
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9) !important; 
+            color: #111111 !important; 
+            font-size: 8.5px !important; 
+            font-family: monospace; 
+            font-weight: 800; 
+            border-radius: 3px 0 0 3px;
+            border-left: 1.5px solid #64748b; 
+            border-top: 0.5px solid #cbd5e1;
+            border-bottom: 0.5px solid #cbd5e1;
+            text-align: center;
+            padding: 2px 1px !important; 
+            white-space: nowrap;
+        }
+        
+        .block-cell { 
+            display: block; 
+            width: 100%;
+            padding: 4.5px 1px; 
+            font-weight: 800; 
+            font-size: 14px; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: 0.5px;
+            text-align: center;
+            border-top: 1.5px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1.5px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .res-a {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #f87171 0%, #dc2626 100%) !important;
+            border-left: 2.5px solid #991b1b;
+            border-radius: 3px 0 0 3px;
+        }
+
+        .res-b {
+            color: #111111 !important;
+            background: linear-gradient(135deg, #bbf7d0 0%, #4ade80 100%) !important;
+        }
+
+        .res-c {
+            color: #422006 !important; 
+            background: linear-gradient(135deg, #fef08a 0%, #eab308 100%) !important; 
+            border-right: 2.5px solid #a16207;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .footer-nav-section {
+            background: radial-gradient(circle at center, #221c19 0%, #030303 100%);
+            padding: 4px 6px;
+            border-top: 2px solid rgba(255, 215, 0, 0.5);
+            text-align: center;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.8);
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        .footer-links-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 4px 8px;
             margin-bottom: 2px;
         }
 
-        .info-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--accent-gold);
-        }
-
-        /* Tab Switchers */
-        .tabs-container {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            border: 1px solid var(--surface-border);
-            background: var(--surface-card);
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .tab-btn.active {
-            background: var(--accent-gold);
-            color: #000;
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 15px var(--accent-gold-glow);
-        }
-
-        /* Results Table Layout */
-        .table-container {
-            background: var(--surface-card);
-            border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .table-header-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            padding: 10px 12px;
-            background: rgba(10, 13, 20, 0.8);
-            border-bottom: 1px solid var(--surface-border);
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-            text-align: center;
-        }
-
-        .table-header-row div:first-child {
-            text-align: left;
-        }
-
-        .slot-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            padding: 12px;
-            border-bottom: 1px solid var(--surface-border);
-            align-items: center;
-            text-align: center;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .slot-row:last-child {
-            border-bottom: none;
-        }
-
-        .slot-row.current-active {
-            background: rgba(245, 158, 11, 0.05);
-            border-left: 3px solid var(--accent-gold);
-        }
-
-        .slot-time {
-            font-size: 12px;
+        .footer-links-container a {
+            color: #94a3b8;
+            font-size: 8px;
             font-weight: 600;
-            color: var(--text-main);
-            text-align: left;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .slot-val {
-            font-size: 14px;
-            font-weight: 700;
-        }
-
-        .val-a { color: var(--col-a); }
-        .val-b { color: var(--col-b); }
-        .val-c { color: #f472b6; }
-        .val-empty { color: var(--text-muted); opacity: 0.4; }
-
-        /* Admin Deck Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 7, 11, 0.85);
-            backdrop-filter: blur(5px);
-            display: none;
-            justify-content: center;
-            align-items: flex-end;
-            z-index: 1000;
-            padding: 10px;
-        }
-
-        .modal-card {
-            background: var(--surface-card);
-            border: 1px solid var(--surface-border);
-            border-radius: 16px 16px 12px 12px;
-            width: 100%;
-            max-width: 450px;
-            padding: 16px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
-        }
-
-        .modal-title {
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: var(--accent-gold);
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        .form-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #ef4444;
-            margin-bottom: 4px;
-            display: block;
-        }
-
-        .form-input, .form-select {
-            width: 100%;
-            padding: 10px;
-            background: var(--bg-body);
-            border: 1px solid var(--surface-border);
-            border-radius: 8px;
-            color: var(--text-main);
-            font-size: 13px;
-            font-family: 'JetBrains Mono', monospace;
-            outline: none;
-        }
-
-        .form-input:focus, .form-select:focus {
-            border-color: var(--accent-gold);
-        }
-
-        .btn-action {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            border: none;
+            text-decoration: none;
             cursor: pointer;
-            margin-top: 4px;
         }
 
-        .btn-danger { background: #ef4444; color: #fff; }
-        .btn-success { background: var(--live-green); color: #fff; }
-        .btn-secondary { background: var(--surface-border); color: var(--text-main); margin-top: 8px; }
-
-        .blocked-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
+        .footer-links-container a:hover {
+            color: #ffd700;
         }
 
-        .chip {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #ef4444;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .footer-divider {
+            color: #444;
+            font-size: 7.5px;
+            display: inline-block;
         }
 
-        .chip span { cursor: pointer; font-weight: bold; }
+        .copyright-text {
+            color: #ffd700;
+            font-size: 7px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        #secret-trigger {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            z-index: 9998;
+            background: transparent;
+            opacity: 0;
+        }
+
+        #admin-panel { 
+            display: none; 
+            background: rgba(18, 15, 13, 0.98); 
+            backdrop-filter: blur(15px);
+            padding: 4px 6px;
+            border: 1px solid #ffd700; 
+            border-radius: 8px; 
+            position: fixed; 
+            top: 2px; 
+            left: 1%; 
+            right: 1%; 
+            z-index: 9999; 
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); 
+            max-height: 94vh;
+            overflow-y: auto; 
+            transform: scale(0.85);
+            transform-origin: top center;
+        }
+        .status-bar { 
+            background: #050505; 
+            color: #00ff41; 
+            padding: 4px 6px; 
+            font-size: 9px; 
+            margin-bottom: 4px; 
+            border-radius: 4px; 
+            border: 1px solid rgba(0, 255, 65, 0.2); 
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .admin-btn { 
+            background: linear-gradient(135deg, #ffd700, #b38600); 
+            color: #000; 
+            border: none; 
+            padding: 6px; 
+            width: 100%; 
+            border-radius: 4px; 
+            font-weight: 900; 
+            font-size: 10.5px;
+            margin-top: 3px; 
+            cursor: pointer; 
+        }
+        .num-input { 
+            width: 30%; 
+            background: #050505; 
+            border: 1px solid #333; 
+            color: #ffeb3b; 
+            font-size: 12px; 
+            text-align: center; 
+            padding: 3px; 
+            margin: 2px; 
+            border-radius: 4px; 
+            font-family: monospace;
+            font-weight: 800;
+        }
+        
+        .block-control-box { background: rgba(5, 5, 5, 0.85); padding: 4px 6px; border-radius: 5px; margin-top: 3px; border: 1px solid rgba(255, 215, 0, 0.2); text-align: left; }
+        .block-control-box h4 { color: #ff5722; font-size: 8.5px; margin-bottom: 2px; text-transform: uppercase; font-weight: 800; }
+        .block-input-row { display: flex; gap: 4px; margin-bottom: 3px; }
+        .block-input-row input { flex: 1; background: #050505; border: 1px solid #333; color: #fff; padding: 3px 5px; border-radius: 3px; font-size: 10px; font-family: monospace; }
+        .block-input-row button { background: #d32f2f; color: #fff; border: none; padding: 0 8px; border-radius: 3px; font-weight: 800; font-size: 9px; cursor: pointer; }
+        .blocked-tags-container { display: flex; flex-wrap: wrap; gap: 3px; max-height: 35px; overflow-y: auto; }
+        .blocked-tag { background: #1a1412; border: 1px solid rgba(255, 215, 0, 0.5); color: #ffd700; padding: 1px 3px; border-radius: 3px; font-size: 8px; display: inline-flex; align-items: center; gap: 2px; font-family: monospace; }
+        .blocked-tag span { cursor: pointer; color: #fff; font-weight: 900; background: rgba(255,255,255,0.1); border-radius: 50%; width: 10px; height: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 7px; }
     </style>
 </head>
 <body>
 
-    <!-- Header Panel -->
-    <div class="header-container">
-        <div class="brand-row">
-            <div class="brand-title" id="secretHeaderTrigger">CANVAS <span>LIVE 3D</span></div>
-            <div class="status-badge" id="marketBadge">
-                <div class="status-dot"></div>
-                <span id="marketStatusText">CLOSED</span>
-            </div>
-        </div>
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="info-label">Live Countdown</div>
-                <div class="info-value" id="countdownTimer">--:--:--</div>
-            </div>
-            <div class="info-card">
-                <div class="info-label">Target Slot</div>
-                <div class="info-value" id="targetSlotText">--:--</div>
-            </div>
+    <audio id="keepAwakeAudio" loop style="display:none;">
+        <source src="https://actions.google.com/sounds/v1/ambiences/rain_heavy.ogg" type="audio/ogg">
+    </audio>
+
+    <div id="activity-simulator" style="display:none; opacity:0; position:absolute;">0</div>
+
+    <div id="info-modal" onclick="closeInfoModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; justify-content:center; align-items:center; padding:15px; backdrop-filter:blur(5px);">
+        <div style="background:#221c19; border:2px solid #ffd700; padding:20px; border-radius:12px; max-width:400px; width:100%; color:#fff; text-align:left; position:relative; max-height:80vh; overflow-y:auto; box-shadow: 0 10px 30px rgba(0,0,0,0.9);" onclick="event.stopPropagation()">
+            <h3 id="info-title" style="color:#ffd700; margin-bottom:10px; font-size:18px; border-bottom:1px solid rgba(255,215,0,0.3); padding-bottom:6px;"></h3>
+            <p id="info-content" style="font-size:12px; line-height:1.6; color:#ccc; white-space: pre-line;"></p>
+            <button onclick="closeInfoModal()" style="margin-top:15px; background:#ffd700; color:#000; border:none; padding:8px 15px; font-weight:bold; border-radius:6px; width:100%; cursor:pointer; font-size:13px;">Close</button>
         </div>
     </div>
 
-    <!-- Switch Tabs -->
-    <div class="tabs-container">
-        <button class="tab-btn active" id="tabToday" onclick="switchTab('today')">TODAY RESULTS</button>
-        <button class="tab-btn" id="tabYesterday" onclick="switchTab('yesterday')">YESTERDAY</button>
-    </div>
-
-    <!-- Data Grid Table -->
-    <div class="table-container">
-        <div class="table-header-row">
-            <div>TIME SLOT</div>
-            <div>SECTION A</div>
-            <div>SECTION B</div>
-            <div>SECTION C</div>
-        </div>
-        <div id="resultsTableBody">
-            <!-- Dynamic Slots Rendered Here -->
-        </div>
-    </div>
-
-    <!-- Admin Deck Modal -->
-    <div class="modal-overlay" id="adminModal">
-        <div class="modal-card">
-            <div class="modal-title">
-                ADMIN CONTROL DECK
-                <span style="font-size:10px; color:var(--text-muted); cursor:pointer;" onclick="closeAdminPanel()">✕ CLOSE</span>
-            </div>
+    <div id="user-view">
+        <div class="header-panel">
             
-            <div class="form-group">
-                <label class="form-label">⛔ Block Numbers</label>
-                <input type="text" class="form-input" id="blockInput" placeholder="e.g. 123, 456">
-                <button class="btn-action btn-danger" onclick="saveBlockedNumbers()">BLOCK NUMBERS</button>
-                <div class="blocked-chips" id="blockedChipsContainer"></div>
+            <div class="canvas-banner">
+                <div class="canvas-title">CΛNVΛS 3D™</div>
+                <div class="canvas-skill">SKILL GAME</div>
+                <div class="canvas-company">KOHINOOR ENTERPRISES</div>
+                <div class="canvas-subtitle">A M U S E M E N T</div>
             </div>
 
-            <div class="form-group" style="margin-top:16px;">
-                <label class="form-label" style="color:var(--accent-gold);">Manual Result Fixer</label>
-                <select class="form-select" id="fixSlotSelect">
-                    <option value="">Select Time Slot</option>
-                </select>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:6px;">
-                    <input type="text" class="form-input" id="fixA" placeholder="A" maxlength="3">
-                    <input type="text" class="form-input" id="fixB" placeholder="B" maxlength="3">
-                    <input type="text" class="form-input" id="fixC" placeholder="C" maxlength="3">
+            <div class="scrolling-banner-outer">
+                <div class="scrolling-banner-container">
+                    <div class="scrolling-track" id="marquee-track">
+                        <div class="marquee-text-item">⟦ WELCOME TO CΛNVΛS 3D™ SKILL GAME ⟧  ✦  GAME • EXPERIENCE • ENJOY  ✦  18+ ONLY  ✦  PLAY RESPONSIBLY</div>
+                        <div class="marquee-text-item">⟦ WELCOME TO CΛNVΛS 3D™ SKILL GAME ⟧  ✦  GAME • EXPERIENCE • ENJOY  ✦  18+ ONLY  ✦  PLAY RESPONSIBLY</div>
+                    </div>
                 </div>
-                <button class="btn-action btn-success" onclick="queueManualResult()">QUEUE FIXED RESULT</button>
             </div>
 
-            <button class="btn-action btn-secondary" onclick="closeAdminPanel()">CLOSE PANEL</button>
+            <div id="live-clock" class="clock">00:00:00</div>
+            
+            <div class="slot-display">
+                <div class="slot-box">⏳ CURRENT SLOT<span id="current-slot-view">--:--</span></div>
+                <div class="slot-box">⚡ NEXT SLOT<span id="next-slot-view">--:--</span></div>
+            </div>
+        </div>
+
+        <div class="date-picker-bar" onclick="document.getElementById('resultDateSelect').showPicker?.() || document.getElementById('resultDateSelect').click();">
+            <label for="resultDateSelect">📅 Select Date:</label>
+            <input type="date" id="resultDateSelect" onchange="onDateChanged()">
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead><tr><th>TIME</th><th>A</th><th>B</th><th>C</th></tr></thead>
+                <tbody id="res-list"></tbody>
+            </table>
+        </div>
+
+        <div class="footer-nav-section">
+            <div class="footer-links-container">
+                <a onclick="showInfo('about')">About Us</a>
+                <span class="footer-divider">|</span>
+                <a onclick="showInfo('rules')">Game Rules</a>
+                <span class="footer-divider">|</span>
+                <a onclick="showInfo('support')">Support</a>
+                <span class="footer-divider">|</span>
+                <a onclick="showInfo('privacy')">Privacy Policy</a>
+                <span class="footer-divider">|</span>
+                <a onclick="showInfo('terms')">Terms & Conditions</a>
+            </div>
+            <div class="copyright-text">
+                © 2026 CΛNVΛS 3D™ SKILL GAME • All Rights Reserved
+            </div>
         </div>
     </div>
 
-    <!-- Script Integration -->
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAdve5TPA6o3rhUcLWJ5uljpQMHCjR6jJk",
-            authDomain: "canvas-live-result.firebaseapp.com",
-            databaseURL: "https://canvas-live-result-default-rtdb.firebaseio.com",
-            projectId: "canvas-live-result",
-            storageBucket: "canvas-live-result.firebasestorage.app",
-            messagingSenderId: "965825756546",
-            appId: "1:965825756546:web:5d7ac955ccd11e9aa9639b",
-            measurementId: "G-HDS4P978KQ"
-        };
+    <div id="secret-trigger" onclick="handleCornerTap()"></div>
 
+    <div id="admin-panel">
+        <div class="status-bar" id="sys-msg">● SYSTEM READY (SMART KEEP-AWAKE ACTIVE)</div>
+        <div id="countdown" style="font-size:16px; color:#ffeb3b; margin:2px; font-family:monospace; font-weight:900;">00:00</div>
+
+        <select id="drawTime" style="width:100%; padding:4px; background:#050505; color:#fff; border:1px solid #333; border-radius:4px; font-size:10px; font-weight:bold;"></select>
+        <button class="admin-btn" onclick="arm()">START AUTO-DAY</button>
+        
+        <div style="margin-top:3px; background:rgba(5,5,5,0.8); padding:3px; border-radius:4px; border:1px solid rgba(255,255,255,0.08);">
+            <p style="font-size:6.5px; color:#777; margin-bottom:2px; font-weight:800; letter-spacing:0.5px;">SMART JUDGMENT AUTO VALUES (BALANCED & FAIR)</p>
+            <input type="number" id="boxA" class="num-input" value="" onfocus="manual=true">
+            <input type="number" id="boxB" class="num-input" value="" onfocus="manual=true">
+            <input type="number" id="boxC" class="num-input" value="" onfocus="manual=true">
+        </div>
+
+        <div class="block-control-box">
+            <h4>Missed / Past Slot Manager (सटीक नंबर दर्ज करें)</h4>
+            <div style="margin-bottom:2px;">
+                <select id="missedSlotTime" style="width:100%; padding:3px; background:#050505; color:#fff; border:1px solid #333; border-radius:3px; font-size:9.5px; font-weight:bold;"></select>
+            </div>
+            <div style="display:flex; gap:3px; margin-bottom:2px;">
+                <input type="number" id="missedA" class="num-input" style="width:33%; font-size:12px; padding:2px;" placeholder="A" value="">
+                <input type="number" id="missedB" class="num-input" style="width:33%; font-size:12px; padding:2px;" placeholder="B" value="">
+                <input type="number" id="missedC" class="num-input" style="width:33%; font-size:12px; padding:2px;" placeholder="C" value="">
+            </div>
+            <button class="admin-btn" style="margin-top:0; background:#ff5722; color:#fff; padding:4px; font-size:9.5px;" onclick="updateMissedSlot()">UPDATE MISSED SLOT</button>
+        </div>
+
+        <div class="block-control-box">
+            <h4>Block Number Filter (Firebase Synced)</h4>
+            <div class="block-input-row">
+                <input type="text" id="blockNumInput" placeholder="Enter number (e.g. 23, 56, 456)" maxlength="3">
+                <button onclick="addBlockedNumber()">Block</button>
+            </div>
+            <div class="blocked-tags-container" id="blockedTagsList"></div>
+        </div>
+
+        <button class="admin-btn" style="background:#222; color:#fff; border:1px solid #444; padding:4px; font-size:9.5px; margin-top:4px;" onclick="exitAdmin()">OFF / EXIT</button>
+    </div>
+
+    <script>
+        const firebaseConfig = { databaseURL: "https://canvas-live-result-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
+        
+        try {
+            firebase.database().enablePersistence().catch(() => {});
+        } catch(e) {}
+        
+        firebase.database().goOnline();
         const db = firebase.database();
 
-        const timeSlots = [
-            "09:00 AM", "09:15 AM", "09:30 AM", "09:45 AM",
-            "10:00 AM", "10:15 AM", "10:30 AM", "10:45 AM",
-            "11:00 AM", "11:15 AM", "11:30 AM", "11:45 AM",
-            "12:00 PM", "12:15 PM", "12:30 PM", "12:45 PM",
-            "01:00 PM", "01:15 PM", "01:30 PM", "01:45 PM",
-            "02:00 PM", "02:15 PM", "02:30 PM", "02:45 PM",
-            "03:00 PM", "03:15 PM", "03:30 PM", "03:45 PM",
-            "04:00 PM", "04:15 PM", "04:30 PM", "04:45 PM",
-            "05:00 PM", "05:15 PM", "05:30 PM", "05:45 PM",
-            "06:00 PM", "06:15 PM", "06:30 PM", "06:45 PM",
-            "07:00 PM", "07:15 PM", "07:30 PM", "07:45 PM",
-            "08:00 PM", "08:15 PM", "08:30 PM", "08:45 PM",
-            "09:00 PM", "09:15 PM", "09:30 PM", "09:45 PM",
-            "10:00 PM"
-        ];
+        let isKeepAwakeOn = false;
+        let wakeLock = null;
+        let activityInterval = null;
 
-        let currentActiveTab = 'today';
-        let remoteData = { results: {}, blocked: [], manualFixes: {} };
-
-        const slotSelect = document.getElementById('fixSlotSelect');
-        timeSlots.forEach(slot => {
-            let opt = document.createElement('option');
-            opt.value = slot;
-            opt.textContent = slot;
-            slotSelect.appendChild(opt);
-        });
-
-        db.ref('canvasLiveState').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                remoteData = data;
+        async function startKeepAwake() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) {}
             }
-            renderTable();
-            renderAdminBlockedChips();
-        });
+            
+            let audio = document.getElementById('keepAwakeAudio');
+            audio.volume = 0.01;
+            audio.play().catch(() => {});
 
-        function switchTab(tab) {
-            currentActiveTab = tab;
-            document.getElementById('tabToday').classList.toggle('active', tab === 'today');
-            document.getElementById('tabYesterday').classList.toggle('active', tab === 'yesterday');
-            renderTable();
+            if (!activityInterval) {
+                activityInterval = setInterval(() => {
+                    let sim = document.getElementById('activity-simulator');
+                    if (sim) {
+                        sim.innerText = (parseInt(sim.innerText) || 0) + 1;
+                    }
+                    window.dispatchEvent(new Event('mousemove'));
+                }, 25000);
+            }
+            isKeepAwakeOn = true;
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('resultsTableBody');
-            tbody.innerHTML = '';
-
-            timeSlots.forEach(slot => {
-                let sourceObj = (currentActiveTab === 'today') ? remoteData.results : remoteData.yesterday;
-                let slotData = sourceObj && sourceObj[slot] ? sourceObj[slot] : { a: '---', b: '---', c: '---' };
-                
-                let row = document.createElement('div');
-                row.className = 'slot-row';
-                row.innerHTML = `
-                    <div class="slot-time">${slot}</div>
-                    <div class="slot-val ${slotData.a === '---' ? 'val-empty' : 'val-a'}">${slotData.a}</div>
-                    <div class="slot-val ${slotData.b === '---' ? 'val-empty' : 'val-b'}">${slotData.b}</div>
-                    <div class="slot-val ${slotData.c === '---' ? 'val-empty' : 'val-c'}">${slotData.c}</div>
-                `;
-                tbody.appendChild(row);
-            });
+        function stopKeepAwake() {
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => { wakeLock = null; });
+            }
+            let audio = document.getElementById('keepAwakeAudio');
+            audio.pause();
+            if (activityInterval) {
+                clearInterval(activityInterval);
+                activityInterval = null;
+            }
+            isKeepAwakeOn = false;
         }
 
         let tapCount = 0;
-        document.getElementById('secretHeaderTrigger').addEventListener('click', () => {
+        let tapTimer = null;
+        function handleCornerTap() {
             tapCount++;
-            if (tapCount >= 4) {
+            clearTimeout(tapTimer);
+            if (tapCount >= 8) {
                 tapCount = 0;
-                let pass = prompt("Enter Admin Password:");
-                if (pass === "24081996") {
-                    document.getElementById('adminModal').style.display = 'flex';
-                } else if (pass !== null) {
-                    alert("Incorrect Password!");
+                let enteredPin = prompt("Enter Admin PIN:");
+                if(enteredPin === "24081996") {
+                    document.getElementById('admin-panel').style.display='block';
+                    renderBlockedUI();
+                    startKeepAwake(); 
+                } else if(enteredPin !== null) {
+                    alert("Wrong Password!");
                 }
+            } else {
+                tapTimer = setTimeout(() => { tapCount = 0; }, 1200);
             }
+        }
+
+        function exitAdmin() {
+            stopKeepAwake(); 
+            location.reload();
+        }
+
+        function showInfo(type) {
+            let title = "";
+            let text = "";
+
+            switch(type) {
+                case 'about':
+                    title = "About Us";
+                    text = "CΛNVΛS 3D™ SKILL GAME is managed by KOHINOOR ENTERPRISES. We provide a fast-result, transparent, and secure digital entertainment platform.";
+                    break;
+                case 'rules':
+                    title = "Game Rules";
+                    text = "1. This platform is strictly for fun and entertainment purposes only (18+).\n2. Results are generated and updated strictly according to scheduled time slots.\n3. Follow all local regulations regarding platform usage.";
+                    break;
+                case 'support':
+                    title = "Support";
+                    text = "Need assistance? Reach out to our 24/7 helpdesk through our authorized communication channels or contact your respective desk administrator.";
+                    break;
+                case 'privacy':
+                    title = "Privacy Policy";
+                    text = "We value your privacy. All user interactions and generated data within your local sessions are stored securely. We do not share your personal information with third parties.";
+                    break;
+                case 'terms':
+                    title = "Terms & Conditions";
+                    text = "By accessing CΛNVΛS 3D™ SKILL GAME, you agree to comply with our terms of service. KOHINOOR ENTERPRISES holds all rights to modify or update platform features and schedules without prior notice.";
+                    break;
+            }
+
+            document.getElementById('info-title').innerText = title;
+            document.getElementById('info-content').innerText = text;
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        function closeInfoModal() {
+            document.getElementById('info-modal').style.display = 'none';
+        }
+
+        let active=false, target="", manual=false;
+        let blockedNumbers = [];
+        let recentGeneratedNumbers = [];
+
+        // Firebase se blocked numbers real-time sync karna
+        db.ref('blocked_numbers').on('value', (snapshot) => {
+            const data = snapshot.val();
+            blockedNumbers = data ? Object.keys(data) : [];
+            renderBlockedUI();
         });
 
-        function closeAdminPanel() {
-            document.getElementById('adminModal').style.display = 'none';
+        function setupDateLimits() {
+            const today = new Date(new Date().toLocaleString("en-US", {timeZone:"Asia/Kolkata"}));
+            const maxStr = today.toISOString().split('T')[0];
+            const pastDate = new Date(today);
+            pastDate.setDate(today.getDate() - 30);
+            const minStr = pastDate.toISOString().split('T')[0];
+
+            const dateInput = document.getElementById('resultDateSelect');
+            dateInput.max = maxStr;
+            dateInput.min = minStr;
+            dateInput.value = maxStr;
         }
 
-        function saveBlockedNumbers() {
-            let inputVal = document.getElementById('blockInput').value;
-            if (!inputVal) return;
-            let newBlocks = inputVal.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        function generateJudgmentBalancedNumber() {
+            let numStr;
+            let attempts = 0;
+            do {
+                let randProfile = Math.random();
+                let randNum;
+                
+                if (randProfile < 0.3) {
+                    randNum = Math.floor(Math.random() * 700) + 150;
+                } else if (randProfile < 0.6) {
+                    randNum = Math.floor(Math.random() * 500);
+                } else {
+                    randNum = Math.floor(Math.random() * 1000);
+                }
+
+                numStr = String(randNum).padStart(3, '0');
+                attempts++;
+                
+                let isBlocked = blockedNumbers.some(b => {
+                    if (numStr === b) return true;
+                    if (b.length === 2 && (numStr.includes(b) || numStr.endsWith(b) || numStr.startsWith(b))) return true;
+                    return false;
+                });
+
+                if (!isBlocked && !recentGeneratedNumbers.includes(numStr)) {
+                    break;
+                }
+                if(attempts > 50) {
+                    break;
+                }
+            } while (true);
+
+            recentGeneratedNumbers.push(numStr);
+            if (recentGeneratedNumbers.length > 12) {
+                recentGeneratedNumbers.shift();
+            }
+
+            return numStr;
+        }
+
+        function getPermutations(numStr) {
+            let clean = numStr.trim();
+            let results = new Set();
             
-            let currentBlocks = remoteData.blocked || [];
-            let combined = Array.from(new Set([...currentBlocks, ...newBlocks]));
+            if(clean.length === 1) {
+                let padded = clean.padStart(2, '0');
+                results.add(padded);
+                results.add(padded.split('').reverse().join(''));
+            } else if(clean.length === 2) {
+                results.add(clean);
+                results.add(clean.split('').reverse().join(''));
+            } else {
+                let arr = clean.split('');
+                function permute(arr, m = []) {
+                    if (arr.length === 0) { results.add(m.join('')); } 
+                    else {
+                        for (let i = 0; i < arr.length; i++) {
+                            let curr = arr.slice();
+                            let next = curr.splice(i, 1);
+                            permute(curr, m.concat(next));
+                        }
+                    }
+                }
+                permute(arr);
+            }
+            return Array.from(results);
+        }
 
-            db.ref('canvasLiveState/blocked').set(combined).then(() => {
-                document.getElementById('blockInput').value = '';
-                alert("Blocked numbers updated successfully!");
+        // Firebase mein block number save karna (Permanent Sync)
+        function addBlockedNumber() {
+            let val = document.getElementById('blockNumInput').value.trim();
+            if(val !== "") {
+                let updates = {};
+                getPermutations(val).forEach(p => {
+                    updates[p] = true;
+                });
+                db.ref('blocked_numbers').update(updates, (error) => {
+                    if (!error) {
+                        document.getElementById('blockNumInput').value = "";
+                    } else {
+                        alert("Failed to block: " + error.message);
+                    }
+                });
+            }
+        }
+
+        // Firebase se block number remove (unblock) karna
+        function removeBlockedNumber(num) {
+            let permutations = getPermutations(num);
+            let updates = {};
+            permutations.forEach(p => {
+                updates[p] = null; // Firebase mein null karne se node delete ho jata hai
             });
+            db.ref('blocked_numbers').update(updates);
         }
 
-        function removeBlock(num) {
-            let currentBlocks = remoteData.blocked || [];
-            let updated = currentBlocks.filter(n => n !== num);
-            db.ref('canvasLiveState/blocked').set(updated);
-        }
-
-        function renderAdminBlockedChips() {
-            let container = document.getElementById('blockedChipsContainer');
-            container.innerHTML = '';
-            let blocks = remoteData.blocked || [];
-            if (blocks.length === 0) {
-                container.innerHTML = '<span style="font-size:10px; color:var(--text-muted);">No numbers blocked.</span>';
+        function renderBlockedUI() {
+            let container = document.getElementById('blockedTagsList');
+            if(!container) return;
+            container.innerHTML = "";
+            if(blockedNumbers.length === 0) {
+                container.innerHTML = "<span style='color:#555; font-size:9px;'>No numbers blocked.</span>";
                 return;
             }
-            blocks.forEach(num => {
-                let chip = document.createElement('div');
-                chip.className = 'chip';
-                chip.innerHTML = `${num} <span onclick="removeBlock('${num}')">×</span>`;
-                container.appendChild(chip);
+            // Unique tags display karne ke liye
+            let uniqueBlocked = [...new Set(blockedNumbers)];
+            uniqueBlocked.forEach(num => {
+                container.innerHTML += `<div class='blocked-tag'>${num} <span onclick="removeBlockedNumber('${num}')">&times;</span></div>`;
             });
         }
 
-        function queueManualResult() {
-            let slot = document.getElementById('fixSlotSelect').value;
-            let a = document.getElementById('fixA').value.trim();
-            let b = document.getElementById('fixB').value.trim();
-            let c = document.getElementById('fixC').value.trim();
+        function updateSlotInfo() {
+            const sel = document.getElementById('drawTime');
+            const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+            let currentHour = now.getHours();
+            let currentMinute = now.getMinutes();
 
-            if (!slot || !a || !b || !c) {
-                alert("Please select slot and enter all 3 values (A, B, C)");
+            if (currentHour > 22 || (currentHour === 22 && currentMinute > 0)) {
+                document.getElementById('current-slot-view').innerText = "Market Closed";
+                document.getElementById('next-slot-view').innerText = "Market Closed";
                 return;
             }
 
-            db.ref(`canvasLiveState/manualFixes/${slot}`).set({ a, b, c }).then(() => {
-                alert(`Manual result queued for ${slot}`);
-                document.getElementById('fixA').value = '';
-                document.getElementById('fixB').value = '';
-                document.getElementById('fixC').value = '';
+            let matchedIndex = 0;
+            for (let i = 0; i < sel.options.length; i++) {
+                let timeStr = sel.options[i].text;
+                let [t, ampm] = timeStr.split(' ');
+                let [h, m] = t.split(':').map(Number);
+                if (ampm === 'PM' && h < 12) h += 12;
+                if (ampm === 'AM' && h === 12) h = 0;
+                
+                let slotTime = new Date(now);
+                slotTime.setHours(h, m, 0, 0);
+                if (now >= slotTime) { matchedIndex = i; } else { break; }
+            }
+            
+            let currentText = sel.options[matchedIndex] ? sel.options[matchedIndex].text : "--:--";
+            let nextText = (matchedIndex < sel.options.length - 1 && sel.options[matchedIndex + 1]) ? sel.options[matchedIndex + 1].text : "Completed";
+            
+            document.getElementById('current-slot-view').innerText = currentText;
+            document.getElementById('next-slot-view').innerText = nextText;
+        }
+
+        function updateMissedSlot() {
+            let slotTime = document.getElementById('missedSlotTime').value;
+            let valA = document.getElementById('missedA').value.trim();
+            let valB = document.getElementById('missedB').value.trim();
+            let valC = document.getElementById('missedC').value.trim();
+
+            if(!slotTime || !valA || !valB || !valC) {
+                alert("Please fill slot time and all A, B, C values!");
+                return;
+            }
+
+            const selectedDate = document.getElementById('resultDateSelect').value;
+            db.ref('results/' + selectedDate + '/' + slotTime).set({
+                A: valA.padStart(3, '0'),
+                B: valB.padStart(3, '0'),
+                C: valC.padStart(3, '0')
+            }, (error) => {
+                if (error) { alert("Failed: " + error.message); } 
+                else {
+                    alert("Slot successfully updated!");
+                    document.getElementById('missedA').value = "";
+                    document.getElementById('missedB').value = "";
+                    document.getElementById('missedC').value = "";
+                }
             });
         }
+
+        setInterval(() => {
+            const now = new Date(new Date().toLocaleString("en-US", {timeZone: 'Asia/Kolkata'}));
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString('en-US', {hour12: true, timeZone: 'Asia/Kolkata'});
+            updateSlotInfo();
+
+            if(document.getElementById('admin-panel').style.display === 'block' && !manual){
+                document.getElementById('boxA').value = generateJudgmentBalancedNumber();
+                document.getElementById('boxB').value = generateJudgmentBalancedNumber();
+                document.getElementById('boxC').value = generateJudgmentBalancedNumber();
+            }
+
+            if(active) {
+                const todayStr = now.toISOString().split('T')[0];
+                let [t, am] = target.split(' '); let [h, m] = t.split(':').map(Number);
+                if(am==='PM' && h<12) h+=12; if(am==='AM' && h===12) h=0;
+                const targetT = new Date(now); targetT.setHours(h, m, 0, 0);
+                const diff = targetT - now;
+
+                if(diff > 0) {
+                    let s = Math.floor(diff/1000);
+                    document.getElementById('countdown').innerText = Math.floor(s/60)+":"+(s%60<10?'0':'')+s%60;
+                    document.getElementById('sys-msg').innerText = "● NEXT DRAW: " + target;
+                } else if(diff <= 0 && diff > -2000) {
+                    let finalA = document.getElementById('boxA').value.padStart(3, '0');
+                    let finalB = document.getElementById('boxB').value.padStart(3, '0');
+                    let finalC = document.getElementById('boxC').value.padStart(3, '0');
+
+                    db.ref('results/'+todayStr+'/'+target).set({A: finalA, B: finalB, C: finalC});
+                    manual = false;
+
+                    let sel = document.getElementById('drawTime');
+                    if(sel.selectedIndex < sel.length - 1) {
+                        sel.selectedIndex++;
+                        target = sel.value;
+                    } else {
+                        active = false;
+                        document.getElementById('sys-msg').innerText = "● DAY COMPLETED";
+                    }
+                }
+            }
+        }, 1000);
+
+        let currentDbRef = null;
+        function renderTableData(data, dateStr) {
+            const todayStr = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"})).toISOString().split('T')[0];
+            const list = document.getElementById('res-list');
+            list.innerHTML = "";
+            if(data) {
+                const keys = Object.keys(data).sort((a,b)=>new Date('1/1/1970 '+a)-new Date('1/1/1970 '+b)).filter(k => k.includes('AM') || k.includes('PM'));
+                keys.forEach((t, i) => {
+                    const isLive = (i === keys.length - 1 && dateStr === todayStr);
+                    let valA = data[t].A ? `A-${data[t].A}` : 'A---';
+                    let valB = data[t].B ? `B-${data[t].B}` : 'B---';
+                    let valC = data[t].C ? `C-${data[t].C}` : 'C---';
+                    
+                    list.innerHTML += `<tr>
+                        <td class='time-col'>${isLive ? '<span class="live-tag">● LIVE</span>' : ''}${t}</td>
+                        <td><div class='block-cell res-a'>${valA}</div></td>
+                        <td><div class='block-cell res-b'>${valB}</div></td>
+                        <td><div class='block-cell res-c'>${valC}</div></td>
+                    </tr>`;
+                });
+            } else { 
+                list.innerHTML = "<tr><td colspan='4' style='padding:40px;color:#555'>No records found for " + dateStr + "</td></tr>"; 
+            }
+        }
+
+        function loadDataForDate(dateStr) {
+            if(currentDbRef) { currentDbRef.off(); }
+
+            document.getElementById('res-list').innerHTML = "<tr><td colspan='4' class='loading-text'>Loading Result...</td></tr>";
+
+            let cachedData = localStorage.getItem('canvas_cache_' + dateStr);
+            if(cachedData) {
+                try {
+                    renderTableData(JSON.parse(cachedData), dateStr);
+                } catch(e) {}
+            }
+
+            currentDbRef = db.ref('results/' + dateStr);
+            currentDbRef.on('value', snap => {
+                const data = snap.val();
+                if(data) {
+                    localStorage.setItem('canvas_cache_' + dateStr, JSON.stringify(data));
+                }
+                renderTableData(data, dateStr);
+            });
+        }
+
+        function onDateChanged() {
+            let selectedDate = document.getElementById('resultDateSelect').value;
+            loadDataForDate(selectedDate);
+        }
+
+        function arm() { 
+            active=true; 
+            target=document.getElementById('drawTime').value; 
+            document.getElementById('sys-msg').innerText = "● AUTO-LOOP ACTIVE (SMART JUDGMENT ON)"; 
+        }
+
+        const sel = document.getElementById('drawTime');
+        const missedSel = document.getElementById('missedSlotTime');
+        
+        for(let h=9; h<=22; h++) for(let m=0; m<60; m+=15){
+            if(h==22 && m>0) blockExit: break;
+            let hh=h>12?h-12:h; let am=h>=12?'PM':'AM';
+            let t=hh+":"+(m==0?'00':m)+" "+am; 
+            sel.add(new Option(t,t));
+            missedSel.add(new Option(t,t));
+        }
+
+        setupDateLimits();
+        updateSlotInfo();
+        loadDataForDate(document.getElementById('resultDateSelect').value);
     </script>
 </body>
 </html>

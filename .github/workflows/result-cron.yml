@@ -1,0 +1,92 @@
+name: 24x7 Canvas Result Cron
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  generate-result:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Blocked & Update Result
+        run: |
+          node -e '
+          const https = require("https");
+
+          function request(url, method = "GET", payload = null) {
+            return new Promise((resolve, reject) => {
+              const req = https.request(url, { method }, (res) => {
+                let body = "";
+                res.on("data", (chunk) => body += chunk);
+                res.on("end", () => {
+                  try { resolve(JSON.parse(body)); } catch(e) { resolve(body); }
+                });
+              });
+              req.on("error", reject);
+              if (payload) req.write(JSON.stringify(payload));
+              req.end();
+            });
+          }
+
+          async function run() {
+            const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+            const hours = now.getHours();
+            const minutes = Math.floor(now.getMinutes() / 15) * 15;
+
+            if (hours < 9 || hours > 22 || (hours === 22 && minutes > 0)) {
+              console.log("Market Closed.");
+              return;
+            }
+
+            let hh = hours > 12 ? hours - 12 : hours;
+            if (hh === 0) hh = 12;
+            const ampm = hours >= 12 ? "PM" : "AM";
+            const minStr = minutes < 10 ? "0" + minutes : minutes;
+            const slotTime = `${hh}:${minStr} ${ampm}`;
+            const todayStr = now.toISOString().split("T")[0];
+
+            const slotUrl = `https://canvas-live-result-default-rtdb.firebaseio.com/results/${todayStr}/${encodeURIComponent(slotTime)}.json`;
+            const blockUrl = `https://canvas-live-result-default-rtdb.firebaseio.com/blocked_numbers.json`;
+
+            const existing = await request(slotUrl);
+            if (existing && existing.A && existing.B && existing.C) {
+              console.log(`Slot ${slotTime} is already filled manually. Skipping.`);
+              return;
+            }
+
+            const blockedData = await request(blockUrl) || {};
+            const blockedArray = Object.keys(blockedData);
+
+            function genNum() {
+              let attempts = 0;
+              let numStr;
+              do {
+                let randProfile = Math.random();
+                let randNum;
+                if (randProfile < 0.3) randNum = Math.floor(Math.random() * 700) + 150;
+                else if (randProfile < 0.6) randNum = Math.floor(Math.random() * 500);
+                else randNum = Math.floor(Math.random() * 1000);
+
+                numStr = String(randNum).padStart(3, "0");
+                attempts++;
+
+                let isBlocked = blockedArray.some(b => {
+                  if (numStr === b) return true;
+                  if (b.length === 2 && (numStr.includes(b) || numStr.endsWith(b) || numStr.startsWith(b))) return true;
+                  return false;
+                });
+
+                if (!isBlocked || attempts > 50) break;
+              } while (true);
+
+              return numStr;
+            }
+
+            const payload = { A: genNum(), B: genNum(), C: genNum() };
+            await request(slotUrl, "PUT", payload);
+            console.log(`Successfully generated result for ${slotTime}:`, payload);
+          }
+
+          run().catch(console.error);
+          '

@@ -1,0 +1,13 @@
+name: Trigger Vercel Cron
+
+on:
+  schedule:
+    - cron: '14,29,44,59 * * * *'  # Har slot se 1 minute pehle run hoga (IST ke hisab se)
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit Vercel API Endpoint
+        run: |
+          curl -X GET "https://canvas3d-inky.vercel.app/api/cron-result"

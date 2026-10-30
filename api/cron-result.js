@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const dBSURL = "https://canvas-live-result-default-rtdb.firebaseio.com/";
+    const dbURL = "https://canvas-live-result-default-rtdb.firebaseio.com";
 
     // Get current date and time in IST
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
 
     // Generate time slots from 9:00 AM to 10:00 PM (every 15 mins)
     let slots = [];
-    for (let h = 9; h < 22; h++) {
+    for (let h = 9; h <= 22; h++) {
       for (let m = 0; m < 60; m += 15) {
         if (h === 22 && m > 0) break;
         let hh = h > 12 ? h - 12 : h;
@@ -38,13 +38,13 @@ export default async function handler(req, res) {
     // Find current or upcoming slot to trigger
     let activeSlot = slots[0];
     for (let i = 0; i < slots.length; i++) {
-      let [timePart, ampm] = slots[i].split(' ');
-      let [h, n] = timePart.split(':').map(Number);
+      let [tPart, ampm] = slots[i].split(' ');
+      let [h, m] = tPart.split(':').map(Number);
       if (ampm === 'PM' && h < 12) h += 12;
       if (ampm === 'AM' && h === 12) h = 0;
 
       let slotTime = new Date(now);
-      slotTime.setHours(h, n, 0, 0);
+      slotTime.setHours(h, m, 0, 0);
 
       if (now >= slotTime) {
         activeSlot = slots[i];
@@ -53,43 +53,76 @@ export default async function handler(req, res) {
       }
     }
 
-    // Fetch existing blocked numbers and results from Firebase using REST API
-    const [blockedRes, resultRes] = await Promise.all([
-      fetch(`${dBSURL}/blocked_numbers.json`),
-      fetch(`${dBSURL}/results/${todayStr}/${activeSlot}.json`)
-    ]);
+    // 1. Pehle check karein ki kya is slot par pehle se koi manual ya fixed result dala gaya hai?
+    const checkRes = await fetch(`${dbURL}/results/${todayStr}/${activeSlot}.json`);
+    const existingData = await checkRes.json();
 
-    const blockedData = await blockedRes.json();
-    const existingResult = await resultRes.json();
-
-    if (existingResult) {
-      return res.status(200).json({ success: true, message: "Result already exists for a slot.", slot: activeSlot });
+    if (existingData && existingData.manualOverride) {
+      return res.status(200).json({ 
+        success: true, 
+        message: "Manual override active for this slot. Skipping auto-generation.", 
+        slot: activeSlot 
+      });
     }
 
-    // Generate Draw Result
-    const currentTimestamp = new Date().toISOString();
+    // 2. Firebase se blocked numbers fetch karein
+    const blockedRes = await fetch(`${dbURL}/blocked_numbers.json`);
+    const blockedData = await blockedRes.json();
+    const blockedList = blockedData ? Object.keys(blockedData) : [];
+
+    // Helper function to generate balanced number avoiding blocked list
+    function generateValidNumber() {
+      let numStr;
+      let attempts = 0;
+      do {
+        let randNum = Math.floor(Math.random() * 1000);
+        numStr = String(randNum).padStart(3, '0');
+        attempts++;
+
+        let isBlocked = blockedList.some(b => {
+          if (numStr === b) return true;
+          if (b.length === 2 && (numStr.includes(b) || numStr.endsWith(b) || numStr.startsWith(b))) return true;
+          return false;
+        });
+
+        if (!isBlocked || attempts > 30) {
+          break;
+        }
+      } while (true);
+      return numStr;
+    }
+
+    // 3. A, B, C ke liye random numbers generate karein (Blocked numbers ko chhod kar)
+    const finalA = generateValidNumber();
+    const finalB = generateValidNumber();
+    const finalC = generateValidNumber();
+
     const resultData = {
-      success: true,
-      message: "Canvas 3D Result generated successfully via Cron",
-      timestamp: currentTimestamp,
-      slot: activeSlot,
-      drawId: Math.floor(100000 + Math.random() * 900000)
+      A: finalA,
+      B: finalB,
+      C: finalC,
+      timestamp: new Date().toISOString()
     };
 
-    // Save result to Firebase using REST API (PUT request)
-    await fetch(`${dBSURL}/results/${todayStr}/${activeSlot}.json`, {
+    // 4. Firebase mein result save kar dein
+    const saveRes = await fetch(`${dbURL}/results/${todayStr}/${activeSlot}.json`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(resultData)
     });
 
-    // Vercel deployment sync verified update
-    return res.status(200).json(resultData);
+    if (saveRes.ok) {
+      return res.status(200).json({
+        success: true,
+        message: "Result generated and saved successfully via Cron.",
+        slot: activeSlot,
+        data: resultData
+      });
+    } else {
+      throw new Error("Failed to save to Firebase");
+    }
+
   } catch (error) {
-    console.error("Cron Error:", error);
-    return res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    return res.status(500).json({ success: false, error: error.message });
   }
 }

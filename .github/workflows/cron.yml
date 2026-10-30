@@ -2,8 +2,8 @@ name: Trigger Vercel Cron
 
 on:
   schedule:
-    # Yeh UTC time hai jo IST ke 14, 29, 44, 59 minutes par chalega
-    - cron: '44,59,14,29 * * * *'
+    # IST ke 12, 27, 42, 57 minutes par exact trigger hone ke liye UTC timing:
+    - cron: '42,57,12,27 * * * *'
 
 jobs:
   ping:

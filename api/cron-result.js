@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const dbURL = "https://canvas-live-result-default-rtdb.firebaseio.com";
+    const dbURL = "https://canvax-live-result-default-rtdb.firebaseio.com/";
 
     // Get current date and time in IST
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
@@ -30,23 +30,27 @@ export default async function handler(req, res) {
         if (h === 22 && m > 0) break;
         let hh = h > 12 ? h - 12 : h;
         let ampm = h >= 12 ? 'PM' : 'AM';
-        let t = hh + ":" + (m === 0 ? '00' : m) + " " + ampm;
+        let t = hh + '.' + (m === 0 ? '00' : m) + ' ' + ampm;
         slots.push(t);
       }
     }
 
+    // FIX: 5 minute aage ka time consider karein kyunki cron 5 minute pehle run hota hai
+    let checkTime = new Date(now.getTime() + 5 * 60000);
+
     // Find current or upcoming slot to trigger
     let activeSlot = slots[0];
     for (let i = 0; i < slots.length; i++) {
-      let [tPart, ampm] = slots[i].split(' ');
-      let [h, m] = tPart.split(':').map(Number);
+      let [t, ampm] = slots[i].split(' ');
+      let [h, m] = t.split('.').map(Number);
       if (ampm === 'PM' && h < 12) h += 12;
       if (ampm === 'AM' && h === 12) h = 0;
 
       let slotTime = new Date(now);
       slotTime.setHours(h, m, 0, 0);
 
-      if (now >= slotTime) {
+      // 'now' ki jagah 'checkTime' use kiya gaya hai taaki sahi slot target ho
+      if (checkTime > slotTime) {
         activeSlot = slots[i];
       } else {
         break;
@@ -58,10 +62,10 @@ export default async function handler(req, res) {
     const existingData = await checkRes.json();
 
     if (existingData && existingData.manualOverride) {
-      return res.status(200).json({ 
-        success: true, 
-        message: "Manual override active for this slot. Skipping auto-generation.", 
-        slot: activeSlot 
+      return res.status(200).json({
+        success: true,
+        message: "Manual override active for this slot. Skipping auto-generation.",
+        slot: activeSlot
       });
     }
 
@@ -78,49 +82,34 @@ export default async function handler(req, res) {
         let randNum = Math.floor(Math.random() * 1000);
         numStr = String(randNum).padStart(3, '0');
         attempts++;
-
-        let isBlocked = blockedList.some(b => {
-          if (numStr === b) return true;
-          if (b.length === 2 && (numStr.includes(b) || numStr.endsWith(b) || numStr.startsWith(b))) return true;
-          return false;
-        });
-
-        if (!isBlocked || attempts > 30) {
-          break;
-        }
-      } while (true);
+      } while (blockedList.includes(numStr) && attempts < 50);
       return numStr;
     }
 
-    // 3. A, B, C ke liye random numbers generate karein (Blocked numbers ko chhod kar)
-    const finalA = generateValidNumber();
-    const finalB = generateValidNumber();
-    const finalC = generateValidNumber();
+    // Agar pehle se result nahi hai, tabhi naya generate karein (Slot Locking check)
+    let finalResultData = existingData;
+    if (!existingData || !existingData.A) {
+      finalResultData = {
+        A: generateValidNumber(),
+        B: generateValidNumber(),
+        C: generateValidNumber(),
+        timestamp: new Date().toISOString()
+      };
 
-    const resultData = {
-      A: finalA,
-      B: finalB,
-      C: finalC,
-      timestamp: new Date().toISOString()
-    };
-
-    // 4. Firebase mein result save kar dein
-    const saveRes = await fetch(`${dbURL}/results/${todayStr}/${activeSlot}.json`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(resultData)
-    });
-
-    if (saveRes.ok) {
-      return res.status(200).json({
-        success: true,
-        message: "Result generated and saved successfully via Cron.",
-        slot: activeSlot,
-        data: resultData
+      // Firebase mein save karein
+      await fetch(`${dbURL}/results/${todayStr}/${activeSlot}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(finalResultData)
       });
-    } else {
-      throw new Error("Failed to save to Firebase");
     }
+
+    return res.status(200).json({
+      success: true,
+      message: "Result generated and synced successfully via Cron.",
+      slot: activeSlot,
+      data: finalResultData
+    });
 
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });

@@ -9,7 +9,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const dbURL = "https://canvax-live-result-default-rtdb.firebaseio.com/";
+    // Database URL updated to match frontend ('canvas' instead of 'canvax')
+    const dbURL = "https://canvas-live-result-default-rtdb.firebaseio.com/";
 
     // Get current date and time in IST
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));

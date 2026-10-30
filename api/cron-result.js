@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,22 +8,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Database URL updated to match frontend ('canvas' instead of 'canvax')
     const dbURL = "https://canvas-live-result-default-rtdb.firebaseio.com/";
 
-    // Get current date and time in IST
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     const todayStr = now.toISOString().split('T')[0];
 
     let currentHour = now.getHours();
     let currentMinute = now.getMinutes();
 
-    // Market closed check (After 10:00 PM)
     if (currentHour > 22 || (currentHour === 22 && currentMinute > 0)) {
       return res.status(200).json({ success: false, message: "Market Closed for today." });
     }
 
-    // Generate time slots from 9:00 AM to 10:00 PM (every 15 mins) - Colon format MATCHED with frontend
     let slots = [];
     for (let h = 9; h <= 22; h++) {
       for (let m = 0; m < 60; m += 15) {
@@ -36,10 +31,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 5 minute aage ka time consider karein kyunki cron 5 minute pehle run hota hai
-    let checkTime = new Date(now.getTime() + 5 * 60000);
-
-    // Find current or upcoming slot to trigger
+    // Exact current time use karein bina kisi 5-minute buffer ke
     let activeSlot = slots[0];
     for (let i = 0; i < slots.length; i++) {
       let [t, ampm] = slots[i].split(' ');
@@ -50,14 +42,14 @@ export default async function handler(req, res) {
       let slotTime = new Date(now);
       slotTime.setHours(h, m, 0, 0);
 
-      if (checkTime > slotTime) {
+      // Jab time slot ke barabar ya usse zyada ho tabhi trigger ho
+      if (now >= slotTime) {
         activeSlot = slots[i];
       } else {
         break;
       }
     }
 
-    // 1. Pehle check karein ki kya is slot par pehle se koi manual ya fixed result dala gaya hai?
     const checkRes = await fetch(`${dbURL}/results/${todayStr}/${activeSlot}.json`);
     const existingData = await checkRes.json();
 
@@ -69,12 +61,10 @@ export default async function handler(req, res) {
       });
     }
 
-    // 2. Firebase se blocked numbers fetch karein
     const blockedRes = await fetch(`${dbURL}/blocked_numbers.json`);
     const blockedData = await blockedRes.json();
     const blockedList = blockedData ? Object.keys(blockedData) : [];
 
-    // Helper function to generate balanced number avoiding blocked list
     function generateValidNumber() {
       let numStr;
       let attempts = 0;
@@ -86,7 +76,6 @@ export default async function handler(req, res) {
       return numStr;
     }
 
-    // Agar pehle se result nahi hai, tabhi naya generate karein (Slot Locking check)
     let finalResultData = existingData;
     if (!existingData || !existingData.A) {
       finalResultData = {
@@ -96,7 +85,6 @@ export default async function handler(req, res) {
         timestamp: new Date().toISOString()
       };
 
-      // Firebase mein save karein
       await fetch(`${dbURL}/results/${todayStr}/${activeSlot}.json`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -106,7 +94,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: "Result generated and synced successfully via Cron.",
+      message: "Result generated and synced successfully at exact time.",
       slot: activeSlot,
       data: finalResultData
     });

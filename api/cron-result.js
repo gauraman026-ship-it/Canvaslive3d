@@ -1,6 +1,3 @@
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get } from "firebase/database";
-
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -56,7 +53,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // Fetch existing blocked numbers and results from Firebase
+    // Fetch existing blocked numbers and results from Firebase using REST API
     const [blockedRes, resultRes] = await Promise.all([
       fetch(`${dBSURL}/blocked_numbers.json`),
       fetch(`${dBSURL}/results/${todayStr}/${activeSlot}.json`)
@@ -69,7 +66,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, message: "Result already exists for a slot.", slot: activeSlot });
     }
 
-    // Canvas 3D Live Result Automation Cron Endpoint & Sync Verification
+    // Generate Draw Result
     const currentTimestamp = new Date().toISOString();
     const resultData = {
       success: true,
@@ -78,6 +75,13 @@ export default async function handler(req, res) {
       slot: activeSlot,
       drawId: Math.floor(100000 + Math.random() * 900000)
     };
+
+    // Save result to Firebase using REST API (PUT request)
+    await fetch(`${dBSURL}/results/${todayStr}/${activeSlot}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(resultData)
+    });
 
     // Vercel deployment sync verified update
     return res.status(200).json(resultData);
